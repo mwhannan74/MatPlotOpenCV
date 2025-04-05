@@ -42,7 +42,7 @@ int main()
 
     // Style
     fig.grid(true);
-    fig.title("MatPlotOpenCV demo – sine + circle");
+    fig.title("MatPlotOpenCV demo: sine + circle");
     fig.xlabel("x-axis");
     fig.ylabel("y-axis");
 

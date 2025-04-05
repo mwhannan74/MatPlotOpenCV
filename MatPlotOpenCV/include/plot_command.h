@@ -24,10 +24,12 @@ namespace mpocv
 
     struct TextData
     {
-        double x{ 0.0 };
-        double y{ 0.0 };
+        double x{ 0 }, y{ 0 };
         std::string text;
         double font_scale{ 0.4 };
+        int thickness{ 1 };
+        enum class HAlign { Left, Center, Right } halign{ HAlign::Left };
+        enum class VAlign { Baseline, Center, Top, Bottom } valign{ VAlign::Baseline };
     };
 
     struct PlotCommand
