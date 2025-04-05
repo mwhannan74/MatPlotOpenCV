@@ -1,0 +1,11 @@
+# Ignore Visual Studio-specific files
+.vs/
+
+# Ignore CMake build output (adjust if needed)
+out/
+
+# Ignore CMake preset configurations
+CMakePresets.json
+
+# Ignore folders
+external/
