@@ -931,7 +931,11 @@ namespace mpocv
         TickInfo out;
         for (double v = graph_lo; v <= graph_hi + 0.5 * step; v += step)
         {
+            if (v < lo - 1e-12 || v > hi + 1e-12)        // <‑‑ clip here
+                continue;
+
             out.locs.push_back(v);
+
             std::ostringstream ss;
             ss << std::fixed << std::setprecision((step < 1) ? 1 : 0) << v;
             out.labels.push_back(ss.str());
@@ -945,51 +949,69 @@ namespace mpocv
         const cv::Scalar black(0, 0, 0);
         const int font = cv::FONT_HERSHEY_SIMPLEX;
 
-        /* X axis ----------------------------------------------------------- */
+        /* X‑axis ---------------------------------------------------------------- */
         cv::line(canvas_, { kMarginLeft, height_ - kMarginBottom },
             { width_ - kMarginRight, height_ - kMarginBottom },
             black, 1);
+
         for (size_t i = 0; i < xticks.locs.size(); ++i)
         {
             cv::Point2i p = data_to_pixel(xticks.locs[i], axes_.ymin);
-            cv::line(canvas_, { p.x, p.y }, { p.x, p.y + kTickLen }, black, 1);
+            cv::line(canvas_, { p.x, p.y },
+                { p.x, p.y + kTickLen }, black, 1);
+
             cv::putText(canvas_, xticks.labels[i],
-                { p.x - 10, p.y + 18 }, font, 0.4, black, 1, cv::LINE_AA);
+                { p.x - 10, p.y + 18 },
+                font, 0.4, black, 1, cv::LINE_AA);
         }
 
-        /* Y axis ----------------------------------------------------------- */
+        /* Y‑axis ---------------------------------------------------------------- */
         cv::line(canvas_, { kMarginLeft, kMarginTop },
             { kMarginLeft, height_ - kMarginBottom },
             black, 1);
+
         for (size_t i = 0; i < yticks.locs.size(); ++i)
         {
             cv::Point2i p = data_to_pixel(axes_.xmin, yticks.locs[i]);
-            cv::line(canvas_, { p.x - kTickLen, p.y }, { p.x, p.y }, black, 1);
+            cv::line(canvas_, { p.x - kTickLen, p.y },
+                { p.x, p.y }, black, 1);
 
-            int offset = 30;
+            constexpr int labelOffset = 30;          // pixels left of tick
             cv::putText(canvas_, yticks.labels[i],
-                { p.x - offset, p.y + 4 }, font, 0.4, black, 1, cv::LINE_AA);
+                { p.x - labelOffset, p.y + 4 },
+                font, 0.4, black, 1, cv::LINE_AA);
         }
     }
+
 
     /// @brief Draw grid lines matching the tick positions.
     inline void Figure::draw_grid(const TickInfo& xticks, const TickInfo& yticks)
     {
         if (!axes_.grid) return;
 
+        const cv::Scalar light(220, 220, 220);   // light grey
+
+        /* vertical grid lines -------------------------------------------------- */
         for (double xv : xticks.locs)
         {
+            if (xv < axes_.xmin || xv > axes_.xmax) continue;   // safety
+
             const cv::Point2i p1 = data_to_pixel(xv, axes_.ymin);
             const cv::Point2i p2 = data_to_pixel(xv, axes_.ymax);
-            cv::line(canvas_, p1, p2, cv::Scalar(220, 220, 220), 1, cv::LINE_AA);
+            cv::line(canvas_, p1, p2, light, 1, cv::LINE_AA);
         }
+
+        /* horizontal grid lines ------------------------------------------------ */
         for (double yv : yticks.locs)
         {
+            if (yv < axes_.ymin || yv > axes_.ymax) continue;   // safety
+
             const cv::Point2i p1 = data_to_pixel(axes_.xmin, yv);
             const cv::Point2i p2 = data_to_pixel(axes_.xmax, yv);
-            cv::line(canvas_, p1, p2, cv::Scalar(220, 220, 220), 1, cv::LINE_AA);
+            cv::line(canvas_, p1, p2, light, 1, cv::LINE_AA);
         }
     }
+
 
     /// @brief Rotate and blit y-axis label (cached).
     inline void Figure::draw_ylabel()

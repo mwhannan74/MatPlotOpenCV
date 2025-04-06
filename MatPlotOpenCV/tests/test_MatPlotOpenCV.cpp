@@ -7,7 +7,7 @@ int main()
 {
     using namespace mpocv;
 
-    // ------------------------ Sine Wave + Circle ------------------------
+    // ------------------------ Two Sine Waves ------------------------
 
     std::vector<double> xs, ys1, ys2;
     const int N = 200;
@@ -19,24 +19,14 @@ int main()
         ys2.push_back(0.5 * std::sin(t + 0.5));
     }
 
-    std::vector<double> cx, cy;
-    const int M = 100;
-    for (int i = 0; i < M; ++i)
-    {
-        double ang = 2 * M_PI * i / M;
-        cx.push_back(std::cos(ang));
-        cy.push_back(std::sin(ang));
-    }
-
     Figure fig1(800, 600);
     fig1.plot(xs, ys1, Color::Blue(), 2.0f);
     fig1.plot(xs, ys2, Color::Cyan(), 2.0f);
     fig1.scatter({ M_PI / 2 }, { 1.0 }, Color::Red(), 6.0f);
     fig1.text(M_PI / 2, 1.05, "peak", Color::Black());
-    fig1.plot(cx, cy, Color::Green(), 1.5f);
-    fig1.equal_scale(true);
+    fig1.equal_scale(false);
     fig1.grid(true);
-    fig1.title("MatPlotOpenCV demo: sine x2 + circle");
+    fig1.title("Two sine waves");
     fig1.xlabel("x-axis");
     fig1.ylabel("y-axis");
     fig1.show("Demo Figure 1");
