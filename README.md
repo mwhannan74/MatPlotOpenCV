@@ -6,16 +6,6 @@ The goal isn’t to replace full‑featured tools like matplotlib, but to give y
 
 Implementation is pure C++17 with OpenCV 4.x as the “canvas.” Rendering is literally pixel drawing on a `cv::Mat`; you view results with `cv::imshow`. (Zoom/pan requires an OpenCV build that includes Qt support.)
 
-| Feature | Status |
-|---------|--------|
-| Line / scatter / text | ✔ |
-| Shapes (circle, rectangles, polygon, ellipse) | ✔ |
-| Autoscale / “tight” / padded axes | ✔ |
-| Equalscale toggle | ✔ |
-| Grid on/off | ✔ |
-| Legend box | ✔ |
-| Dependencies | C++17, OpenCV≥4.5 |
-
 ---
 
 ## Quick Start
