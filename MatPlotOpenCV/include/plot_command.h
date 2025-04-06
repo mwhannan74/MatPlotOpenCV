@@ -6,6 +6,10 @@
 namespace mpocv
 {
 
+    /**
+     * @enum CmdType
+     * @brief Type?safe discriminator for PlotCommand variants.
+     */
     enum class CmdType { Line, Scatter, Text };
 
     struct LineData
