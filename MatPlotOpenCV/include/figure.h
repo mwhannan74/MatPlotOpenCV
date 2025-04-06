@@ -43,6 +43,8 @@ namespace mpocv
         bool valid() const { return std::isfinite(xmin); }
     };
 
+
+
     /**
      * @class Figure
      * @brief A retained-command plotting canvas.
@@ -76,6 +78,10 @@ namespace mpocv
             : width_(w), height_(h),
             canvas_(h, w, CV_8UC3, cv::Scalar(255, 255, 255))
         {}
+
+        // ========================================================================
+        // Primary methods for drawing lines, shapes, and scatter plots.
+        // ========================================================================
 
         /**
           * @brief Draw a connected poly-line (lvalue overload).
@@ -190,6 +196,148 @@ namespace mpocv
         }
 
         /**
+         * @brief Draw a filled or stroked circle centered at data coordinates.
+         *
+         * Adds a circle drawing command to the figure.
+         *
+         * @param cx X-coordinate of the circle center.
+         * @param cy Y-coordinate of the circle center.
+         * @param radius Radius of the circle.
+         * @param style Line and fill styling for the circle.
+         */
+        void circle(double cx, double cy, double radius, const ShapeStyle& style)
+        {
+            PlotCommand cmd;
+            cmd.type = CmdType::Circle;
+            cmd.circle = { cx, cy, radius, style };
+            data_bounds_.expand(cx - radius, cy - radius);
+            data_bounds_.expand(cx + radius, cy + radius);
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Draw a rectangle using lower-left corner, width, and height.
+         *
+         * Adds a rectangle drawing command using MATLAB-style [x y w h] semantics.
+         *
+         * @param x X-coordinate of the lower-left corner.
+         * @param y Y-coordinate of the lower-left corner.
+         * @param w Rectangle width.
+         * @param h Rectangle height.
+         * @param style Line and fill styling for the rectangle.
+         */
+        void rect_xywh(double x, double y, double w, double h, const ShapeStyle& style)
+        {
+            PlotCommand cmd;
+            cmd.type = CmdType::RectXYWH;
+            cmd.rect = { x, y, x + w, y + h, style };
+            data_bounds_.expand(x, y);
+            data_bounds_.expand(x + w, y + h);
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Draw a rectangle using top-left and bottom-right corners.
+         *
+         * Adds a rectangle drawing command using OpenCV-style (x0, y0, x1, y1) bounds.
+         *
+         * @param x0 X-coordinate of the top-left or first corner.
+         * @param y0 Y-coordinate of the top-left or first corner.
+         * @param x1 X-coordinate of the bottom-right or second corner.
+         * @param y1 Y-coordinate of the bottom-right or second corner.
+         * @param style Line and fill styling for the rectangle.
+         */
+        void rect_ltrb(double x0, double y0, double x1, double y1, const ShapeStyle& style)
+        {
+            PlotCommand cmd;
+            cmd.type = CmdType::RectLTRB;
+            cmd.rect = { x0, y0, x1, y1, style };
+            data_bounds_.expand(x0, y0);
+            data_bounds_.expand(x1, y1);
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Draw a rotated rectangle using center point, size, and rotation angle.
+         *
+         * Adds a rotated rectangle using OpenCV's RotatedRect-style specification.
+         *
+         * @param cx X-coordinate of the rectangle center.
+         * @param cy Y-coordinate of the rectangle center.
+         * @param w Width of the rectangle (horizontal side length).
+         * @param h Height of the rectangle (vertical side length).
+         * @param angle_deg Rotation angle in degrees (counter-clockwise).
+         * @param style Line and fill styling for the rectangle.
+         */
+        void rotated_rect(double cx, double cy, double w, double h, double angle_deg, const ShapeStyle& style)
+        {
+            PlotCommand cmd;
+            cmd.type = CmdType::RotatedRect;
+            cmd.rot_rect = { cx, cy, w, h, angle_deg, style };
+
+            // Expand bounds using a conservative bounding circle
+            const double r = 0.5 * std::sqrt(w * w + h * h);
+            data_bounds_.expand(cx - r, cy - r);
+            data_bounds_.expand(cx + r, cy + r);
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Draw a filled or stroked polygon from a sequence of data points.
+         *
+         * Adds a polygon defined by x[i], y[i] coordinates. OpenCV-style closed polygon.
+         *
+         * @param x Vector of x-coordinates.
+         * @param y Vector of y-coordinates (must match size of @p x).
+         * @param style Line and fill styling for the polygon.
+         */
+        void polygon(const std::vector<double>& x, const std::vector<double>& y, const ShapeStyle& style)
+        {
+            if (x.size() != y.size() || x.empty()) return;
+
+            PlotCommand cmd;
+            cmd.type = CmdType::Polygon;
+            cmd.polygon = { x, y, style };
+            for (size_t i = 0; i < x.size(); ++i)
+                data_bounds_.expand(x[i], y[i]);
+
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Draw a filled or stroked ellipse.
+         *
+         * Adds an ellipse centered at (cx, cy) with given width, height, and rotation.
+         *
+         * @param cx X-coordinate of the ellipse center.
+         * @param cy Y-coordinate of the ellipse center.
+         * @param w Width of the full ellipse (major axis).
+         * @param h Height of the full ellipse (minor axis).
+         * @param angle_deg Rotation angle in degrees (counter-clockwise).
+         * @param style Line and fill styling for the ellipse.
+         */
+        void ellipse(double cx, double cy, double w, double h, double angle_deg, const ShapeStyle& style)
+        {
+            PlotCommand cmd;
+            cmd.type = CmdType::Ellipse;
+            cmd.ellipse = { cx, cy, w, h, angle_deg, style };
+            data_bounds_.expand(cx - 0.5 * w, cy - 0.5 * h);
+            data_bounds_.expand(cx + 0.5 * w, cy + 0.5 * h);
+            cmds_.push_back(std::move(cmd));
+            dirty_ = true;
+        }
+
+
+        // ========================================================================
+        // Helper methods for axes, labels, and grid.
+        // ========================================================================
+
+        /**
          * @brief Set the x-axis limits.
          *
          * Sets the lower and upper limits for the x-axis and disables autoscaling.
@@ -272,6 +420,10 @@ namespace mpocv
             ylabel_ = t; ylabel_cache_valid_ = false; dirty_ = true;
         }
 
+        // ========================================================================
+        // Core functions for rendering, showing, and saving the figure.
+        // ========================================================================
+
         /**
          * @brief Convert retained commands to pixel representation.
          *
@@ -333,42 +485,122 @@ namespace mpocv
 
                 switch (cmd.type)
                 {
-                case CmdType::Line:
-                {
-                    const auto& X = cmd.line.x;
-                    const auto& Y = cmd.line.y;
-                    for (size_t i = 1; i < X.size(); ++i)
+                    case CmdType::Line:
                     {
-                        cv::line(canvas_, data_to_pixel(X[i - 1], Y[i - 1]),
-                            data_to_pixel(X[i], Y[i]),
-                            cvcol,
-                            static_cast<int>(cmd.line.thickness),
-                            cv::LINE_AA);
+                        const auto& X = cmd.line.x;
+                        const auto& Y = cmd.line.y;
+                        for (size_t i = 1; i < X.size(); ++i)
+                        {
+                            cv::line(canvas_, data_to_pixel(X[i - 1], Y[i - 1]),
+                                data_to_pixel(X[i], Y[i]),
+                                cvcol,
+                                static_cast<int>(cmd.line.thickness),
+                                cv::LINE_AA);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case CmdType::Scatter:
-                {
-                    const auto& X = cmd.scatter.x;
-                    const auto& Y = cmd.scatter.y;
-                    for (size_t i = 0; i < X.size(); ++i)
+                    case CmdType::Scatter:
                     {
-                        cv::circle(canvas_, data_to_pixel(X[i], Y[i]),
-                            static_cast<int>(cmd.scatter.marker_size),
-                            cvcol, cv::FILLED, cv::LINE_AA);
+                        const auto& X = cmd.scatter.x;
+                        const auto& Y = cmd.scatter.y;
+                        for (size_t i = 0; i < X.size(); ++i)
+                        {
+                            cv::circle(canvas_, data_to_pixel(X[i], Y[i]),
+                                static_cast<int>(cmd.scatter.marker_size),
+                                cvcol, cv::FILLED, cv::LINE_AA);
+                        }
+                        break;
                     }
-                    break;
-                }
-                case CmdType::Text:
-                {
-                    const cv::Point2i p = anchored_text_pos(cmd.txt);
-                    cv::putText(canvas_, cmd.txt.text, p,
-                        cv::FONT_HERSHEY_SIMPLEX,
-                        cmd.txt.font_scale, cvcol,
-                        cmd.txt.thickness, cv::LINE_AA);
-                    break;
-                }
-                }
+                    case CmdType::Text:
+                    {
+                        const cv::Point2i p = anchored_text_pos(cmd.txt);
+                        cv::putText(canvas_, cmd.txt.text, p,
+                            cv::FONT_HERSHEY_SIMPLEX,
+                            cmd.txt.font_scale, cvcol,
+                            cmd.txt.thickness, cv::LINE_AA);
+                        break;
+                    }
+                    case CmdType::Circle:
+                    {
+                        const auto& d = cmd.circle;
+                        const cv::Point center = data_to_pixel(d.cx, d.cy);
+                        const int radius_px = static_cast<int>(d.radius * plot_width() / (axes_.xmax - axes_.xmin));
+
+                        if (d.style.fill_alpha > 0.0f)
+                            cv::circle(canvas_, center, radius_px, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+
+                        if (d.style.thickness > 0.0f)
+                            cv::circle(canvas_, center, radius_px, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        break;
+                    }
+                    case CmdType::RectXYWH:
+                    case CmdType::RectLTRB:
+                    {
+                        const auto& d = cmd.rect;
+                        const cv::Point p0 = data_to_pixel(d.x0, d.y0);
+                        const cv::Point p1 = data_to_pixel(d.x1, d.y1);
+                        const cv::Rect r = cv::Rect(p0, p1);
+
+                        if (d.style.fill_alpha > 0.0f)
+                            cv::rectangle(canvas_, r, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+
+                        if (d.style.thickness > 0.0f)
+                            cv::rectangle(canvas_, r, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        break;
+                    }
+                    case CmdType::RotatedRect:
+                    {
+                        const auto& d = cmd.rot_rect;
+                        cv::RotatedRect r(data_to_pixel(d.cx, d.cy),
+                            cv::Size2f(
+                                static_cast<float>(d.width * plot_width() / (axes_.xmax - axes_.xmin)),
+                                static_cast<float>(d.height * plot_height() / (axes_.ymax - axes_.ymin))),
+                            static_cast<float>(-d.angle_deg));  // OpenCV uses CW angle
+
+                        cv::Point2f verts[4];
+                        r.points(verts);
+
+                        std::vector<cv::Point> pts(4);
+                        for (int i = 0; i < 4; ++i)
+                            pts[i] = verts[i];
+
+                        if (d.style.fill_alpha > 0.0f)
+                            cv::fillConvexPoly(canvas_, pts, cv_color(d.style.fill_color, d.style.fill_alpha), cv::LINE_AA);
+
+                        if (d.style.thickness > 0.0f)
+                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        break;
+                    }
+                    case CmdType::Polygon:
+                    {
+                        const auto& d = cmd.polygon;
+                        std::vector<cv::Point> pts;
+                        for (size_t i = 0; i < d.x.size(); ++i)
+                            pts.push_back(data_to_pixel(d.x[i], d.y[i]));
+
+                        if (d.style.fill_alpha > 0.0f)
+                            cv::fillPoly(canvas_, std::vector<std::vector<cv::Point>>{ pts }, cv_color(d.style.fill_color, d.style.fill_alpha), cv::LINE_AA);
+
+                        if (d.style.thickness > 0.0f)
+                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        break;
+                    }
+                    case CmdType::Ellipse:
+                    {
+                        const auto& d = cmd.ellipse;
+                        const cv::Point center = data_to_pixel(d.cx, d.cy);
+                        const cv::Size axes(
+                            static_cast<int>(0.5 * d.width * plot_width() / (axes_.xmax - axes_.xmin)),
+                            static_cast<int>(0.5 * d.height * plot_height() / (axes_.ymax - axes_.ymin)));
+
+                        if (d.style.fill_alpha > 0.0f)
+                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+
+                        if (d.style.thickness > 0.0f)
+                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        break;
+                    }
+                } //switch
             }
 
             // 7) Figure title and axis labels
@@ -416,6 +648,9 @@ namespace mpocv
             if (dirty_) render();
             cv::imwrite(filename, canvas_);
         }
+
+
+
 
     private:
 
@@ -465,6 +700,22 @@ namespace mpocv
             const int px = kMarginLeft + static_cast<int>(x_frac * plot_width() + 0.5);
             const int py = height_ - kMarginBottom - static_cast<int>(y_frac * plot_height() + 0.5);
             return { px, py };
+        }
+
+        /**
+         * @brief Convert a custom Color to OpenCV cv::Scalar with optional alpha.
+         *
+         * Converts an mpocv::Color to a cv::Scalar in BGR(A) format. The alpha
+         * channel is returned as a scaled 0–255 uchar if specified, but is only
+         * meaningful when drawing into a 4-channel (CV_8UC4) canvas.
+         *
+         * @param c The Color to convert (RGB format).
+         * @param alpha Alpha multiplier in range [0.0, 1.0]. Default is 1.0 (opaque).
+         * @return cv::Scalar The OpenCV-compatible color (B, G, R, A).
+         */
+        cv::Scalar cv_color(const Color& c, float alpha = 1.0f)
+        {
+            return cv::Scalar(c.b, c.g, c.r, static_cast<uchar>(alpha * 255));
         }
 
         /* ---------- axis, grid, tick helpers ------------------------------ */
