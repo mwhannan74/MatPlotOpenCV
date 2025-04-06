@@ -1,172 +1,113 @@
 # MatPlotOpenCV
 
-**MatPlotOpenCV** is a lightweight C++ plotting library built on OpenCV. It provides a simple, MATLAB/matplotlib-inspired interface for creating 2D plots such as lines, scatter markers, and annotated text. It supports axis control, autoscaling, equal scaling, grid display, and basic labeling.
+MatPlotOpenCV is a lightweight, header‑only plotting helper that offers a MATLAB / matplotlib‑style API for basic 2‑D graphics—lines, scatter, text, and simple shapes—without pulling in a full GUI or OpenGL backend. Because it relies solely on OpenCV image routines, it’s thread‑safe: you can create and render figures anywhere in your code, and drawing isn’t executed until you explicitly call `render()`.
 
-This library is designed for personal or internal use, with minimal dependencies and a focus on clarity, speed, and simplicity.
+The goal isn’t to replace full‑featured tools like matplotlib, but to give you a real‑time, minimal‑dependency option for debugging algorithms or visualising quick diagnostics. Features cover the essentials: line and marker styling, filled shapes with alpha, autoscaling (tight or padded), equal‑scale axes, grid, and legends.
 
----
+Implementation is pure C++17 with OpenCV 4.x as the “canvas.” Rendering is literally pixel drawing on a `cv::Mat`; you view results with `cv::imshow`. (Zoom/pan requires an OpenCV build that includes Qt support.)
 
-## Core Functionality
-
-### Plot: `plot(x, y, color, thickness)`
-
-Draws a connected line through the points `(x[i], y[i])`.
-
-```cpp
-fig.plot(x, y);  // Default: blue, 1px thick
-fig.plot(x, y, Color::Green(), 2.0f);
-```
-
-Supports both lvalue and rvalue inputs.
+| Feature | Status |
+|---------|--------|
+| Line / scatter / text | ✔ |
+| Shapes (circle, rectangles, polygon, ellipse) | ✔ |
+| Autoscale / “tight” / padded axes | ✔ |
+| Equalscale toggle | ✔ |
+| Grid on/off | ✔ |
+| Legend box | ✔ |
+| Dependencies | C++17, OpenCV≥4.5 |
 
 ---
 
-### Scatter: `scatter(x, y, color, size)`
-
-Draws unconnected filled circles at each point `(x[i], y[i])`.
-
-```cpp
-fig.scatter(x, y, Color::Red(), 5.0f);
-```
-
----
-
-### Text Annotation: `text(x, y, msg, color, scale, thickness, halign, valign)`
-
-Places a label at the data point `(x, y)`.
-
-```cpp
-fig.text(3.14, 1.0, "Peak", Color::Black(), 0.4, 1);
-```
-
-Supports optional alignment:
-```cpp
-fig.text(0, 0, "Origin", Color::Black(), 0.4, 1,
-         TextData::HAlign::Center, TextData::VAlign::Top);
-```
-
----
-
-### Axis Control
-
-```cpp
-fig.set_xlim(xmin, xmax);     // Manually set x range
-fig.set_ylim(ymin, ymax);     // Manually set y range
-fig.autoscale(true);          // Let axes expand to fit data (default: true)
-fig.equal_scale(true);        // Equal units in x and y axes
-```
-
----
-
-### Grid Display
-
-```cpp
-fig.grid(true);  // Show major grid lines
-```
-
----
-
-### Labels and Title
-
-```cpp
-fig.title("Plot Title");
-fig.xlabel("X Axis Label");
-fig.ylabel("Y Axis Label");
-```
-
----
-
-### Rendering and Output
-
-```cpp
-fig.render();                 // Converts commands to pixels (called automatically)
-fig.show("Window Name");      // Opens OpenCV window
-fig.save("filename.png");     // Saves rendered plot to disk
-```
-
----
-
-## Demo 1: Sine Wave with Marker and Circle
-
-```cpp
-#include <cmath>
-#include "figure.h"
-
-int main() {
-    using namespace mpocv;
-
-    std::vector<double> xs, ys;
-    for (int i = 0; i < 200; ++i) {
-        double t = i * 0.05;
-        xs.push_back(t);
-        ys.push_back(std::sin(t));
-    }
-
-    std::vector<double> cx, cy;
-    for (int i = 0; i < 100; ++i) {
-        double ang = 2 * M_PI * i / 100;
-        cx.push_back(std::cos(ang));
-        cy.push_back(std::sin(ang));
-    }
-
-    Figure fig(800, 600);
-    fig.plot(xs, ys, Color::Blue(), 2.0f);
-    fig.scatter({ M_PI / 2 }, { 1.0 }, Color::Red(), 6.0f);
-    fig.text(M_PI / 2, 1.05, "Peak");
-
-    fig.plot(cx, cy, Color::Green(), 1.5f);
-    fig.equal_scale(true);
-
-    fig.grid(true);
-    fig.title("Sine Wave + Circle");
-    fig.xlabel("Time (s)");
-    fig.ylabel("Amplitude");
-
-    fig.show("Demo");
-    fig.save("demo.png");
-
-    cv::waitKey(0);
-}
-```
-
----
-
-## Demo 2: 2D Object Path (X vs Y)
+## Quick Start
 
 ```cpp
 #include "figure.h"
+using namespace mpocv;
 
-int main() {
-    using namespace mpocv;
+Figure fig(640,480);
 
-    std::vector<double> x_path = {0, 1, 2, 3, 4, 5, 6};
-    std::vector<double> y_path = {0, 0.5, 1.5, 1.0, 0.5, 0.0, -0.5};
+fig.plot(x, y, Color::Blue(), 2.0f, "signal");
+fig.scatter(px, py, Color::Red(), 5.0f, "events");
+fig.text(3.14, 1.0, "Peak");
 
-    Figure fig(600, 600);
-    fig.plot(x_path, y_path, Color::Blue(), 2.0f);
-    fig.scatter({ x_path.front() }, { y_path.front() }, Color::Green(), 6.0f);
-    fig.scatter({ x_path.back() }, { y_path.back() }, Color::Red(), 6.0f);
+fig.grid(true);
+fig.axis_pad(0.05);     // 5% padding (MATLABlike)
+fig.legend();           // show in northeast corner
 
-    fig.text(x_path.front(), y_path.front() + 0.1, "Start", Color::Black());
-    fig.text(x_path.back(), y_path.back() - 0.1, "End", Color::Black());
+fig.title("Demo");
+fig.xlabel("Time [s]");
+fig.ylabel("Amplitude");
 
-    fig.equal_scale(true);
-    fig.grid(true);
-    fig.title("2D Object Path");
-    fig.xlabel("X Position");
-    fig.ylabel("Y Position");
-
-    fig.show("Path");
-    fig.save("path_plot.png");
-
-    cv::waitKey(0);
-}
+fig.show();
+fig.save("demo.png");
 ```
 
 ---
 
-## Notes
+## Core API (oneliners)
 
-- All `Figure` instances are self-contained. There is no shared global state.
-- Plot commands are retained until cleared or the `Figure` is destroyed.
-- Coordinate transforms (data-to-pixel) are handled internally, with support for resizing in the future.
+| Action | Call |
+|--------|------|
+| Line plot | `plot(x, y, color, thickness, label)` |
+| Scatter   | `scatter(x, y, color, size, label)` |
+| Text      | `text(x, y, msg, color, scale, thick, halign, valign)` |
+| Shapes    | `circle`, `rect_xywh`, `rect_ltrb`, `rotated_rect`, `polygon`, `ellipse` (all accept `ShapeStyle` + `label`) |
+| Grid      | `grid(true/false)` |
+| Tight / padded axes | `axis_tight()`, `axis_pad(frac)` |
+| Equal units | `equal_scale(true)` |
+| Manual limits | `set_xlim(lo,hi)`, `set_ylim(lo,hi)` |
+| Legend     | `legend(on=true, loc="northEast")` |
+| Render / display / save | `render()`, `show("win")`, `save("file.png")` |
+
+---
+
+## Examples
+
+### 1 · Two sine waves + legend
+
+```cpp
+Figure f(800,600);
+f.plot(xs, ys1, Color::Blue(), 2.0f, "sin(t)");
+f.plot(xs, ys2, Color::Cyan(), 2.0f, "0.5·sin(t+0.5)");
+f.scatter({M_PI/2},{1.0}, Color::Red(), 6.0f, "peak");
+f.text(M_PI/2,1.05,"peak");
+
+f.grid(true);
+f.axis_tight();
+f.legend();               // default NE
+f.show();
+```
+
+### 2 · Shape test (equalscale)
+
+```cpp
+Figure g(600,600);
+ShapeStyle s{ Color::Black(), 2.0f, Color::Red(), 0.4f };
+g.circle(0,0,1,s,"circle");
+g.rect_xywh(-2,-1,1,2,s,"rect");
+g.rotated_rect(2,1,1,0.5,30,s,"rotrect");
+g.equal_scale(true);
+g.grid(true);
+g.legend(true,"southWest");
+g.show();
+```
+
+---
+
+## Build / Integration
+
+1.  Add the `include/` folder to your include path.  
+2.  Link against OpenCV modules **core**, **imgproc**, **highgui**.  
+   ```cmake
+   find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
+   add_executable(app main.cpp)
+   target_link_libraries(app PRIVATE ${OpenCV_LIBS})
+   ```
+---
+
+## Notes & Limits
+
+* OpenCV’s Hershey fonts are basic; for rich text or LaTeX you’ll need a different backend.
+* Vector output (SVG/PDF) and subplots are not yet implemented.
+* Threadsafe as long as each thread owns its own `Figure`.
+
