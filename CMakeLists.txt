@@ -22,3 +22,22 @@ target_link_libraries(mpocv INTERFACE opencv_core opencv_highgui opencv_imgproc)
 # ------------------------------------------------------------------
 add_executable(test_MatPlotOpenCV tests/test_MatPlotOpenCV.cpp)
 target_link_libraries(test_MatPlotOpenCV PRIVATE mpocv)
+
+
+# ------------------------------------------------------------------
+# Documentation target
+# ------------------------------------------------------------------
+find_package(Doxygen REQUIRED)
+
+set(PROJECT_VERSION 0.1)          # or pull from a variable
+
+configure_file(
+    docs/Doxyfile.in
+    ${CMAKE_BINARY_DIR}/Doxyfile
+    @ONLY)
+
+add_custom_target(doc
+    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Generating API documentation with Doxygen"
+    VERBATIM)
