@@ -364,6 +364,40 @@ namespace mpocv
         }
 
         /**
+         * @brief Automatically scale axes tightly around the plotted data.
+         *
+         * Sets the padding fraction to 0.0, meaning the axis limits will closely
+         * match the data bounds. No extra margin is added around the data.
+         *
+         * @note Calling this will invalidate the current render and force a re-draw
+         *       on the next call to render(), show(), or save().
+         */
+        void axis_tight()
+        {
+            axes_.pad_frac = 0.0;
+            dirty_ = true;
+        }
+
+        /**
+         * @brief Set a fractional padding for the auto-scaled axes.
+         *
+         * When autoscale is enabled and the figure is rendered, the axis limits
+         * will be expanded on each side by the given fraction of the data range.
+         * For example, a fraction of 0.05 means 5% extra space on each boundary.
+         *
+         * @param frac Padding fraction in [0.0, 1.0]. A value of 0.0 means no extra
+         *             padding (tight), while 0.1 would add 10% padding, etc.
+         *
+         * @note Values below 0.0 are clamped to 0.0. Any change here takes effect
+         *       on the next render() or show().
+         */
+        void axis_pad(double frac)
+        {
+            axes_.pad_frac = std::max(0.0, frac);
+            dirty_ = true;
+        }
+
+        /**
          * @brief Enable or disable autoscaling.
          *
          * When enabled, the axes limits will automatically adjust to the data bounds.
@@ -447,6 +481,15 @@ namespace mpocv
                     /* Fallback when no data is present */
                     axes_.xmin = 0; axes_.xmax = 1; axes_.ymin = 0; axes_.ymax = 1;
                 }
+            }
+
+            // 1b) Optional padding
+            if (axes_.pad_frac > 0.0)
+            {
+                const double dx = (axes_.xmax - axes_.xmin) * axes_.pad_frac;
+                const double dy = (axes_.ymax - axes_.ymin) * axes_.pad_frac;
+                axes_.xmin -= dx;  axes_.xmax += dx;
+                axes_.ymin -= dy;  axes_.ymax += dy;
             }
 
             // Guarantee non-zero spans before further math

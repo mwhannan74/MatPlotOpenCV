@@ -24,8 +24,8 @@ int main()
     fig1.plot(xs, ys2, Color::Cyan(), 2.0f);
     fig1.scatter({ M_PI / 2 }, { 1.0 }, Color::Red(), 6.0f);
     fig1.text(M_PI / 2, 1.05, "peak", Color::Black());
-    fig1.equal_scale(false);
     fig1.grid(true);
+    fig1.axis_tight();
     fig1.title("Two sine waves");
     fig1.xlabel("x-axis");
     fig1.ylabel("y-axis");
@@ -61,7 +61,7 @@ int main()
     circle_style.thickness = 2.0f;
     circle_style.fill_color = Color::Red();
     circle_style.fill_alpha = 0.5f;
-    fig3.circle(1, 1, 0.5, circle_style);
+    fig3.circle(2, 1, 0.5, circle_style);
 
     // Rectangle [x y w h]
     ShapeStyle rect_xywh_style;
@@ -101,7 +101,7 @@ int main()
     ellipse_style.thickness = 2.0f;
     ellipse_style.fill_color = Color::Red();
     ellipse_style.fill_alpha = 0.3f;
-    fig3.ellipse(5.5, 3.0, 2.0, 1.0, 45.0, ellipse_style);
+    fig3.ellipse(4.5, 2.0, 2.0, 1.0, 45.0, ellipse_style);
 
     fig3.equal_scale(true);
     fig3.grid(true);
