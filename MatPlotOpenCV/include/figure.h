@@ -639,8 +639,10 @@ namespace mpocv
         {
             cv::Point2i p = data_to_pixel(axes_.xmin, yticks.locs[i]);
             cv::line(canvas_, { p.x - kTickLen, p.y }, { p.x, p.y }, black, 1);
+
+            int offset = 30;
             cv::putText(canvas_, yticks.labels[i],
-                { p.x - 45, p.y + 4 }, font, 0.4, black, 1, cv::LINE_AA);
+                { p.x - offset, p.y + 4 }, font, 0.4, black, 1, cv::LINE_AA);
         }
     }
 
@@ -685,8 +687,11 @@ namespace mpocv
         }
 
         /* Top-left corner for copy */
-        const int x = 10;
-        const int y = kMarginTop + (plot_height() - ylabel_cache_.rows) / 2;
+        const int label_offset = 55;  // or tweak as needed
+        const int x = kMarginLeft - label_offset;
+        
+        const int y = kMarginTop + (plot_height() - ylabel_cache_.rows) / 2;        
+
         if (x >= 0 && y >= 0 &&
             x + ylabel_cache_.cols <= canvas_.cols &&
             y + ylabel_cache_.rows <= canvas_.rows)
