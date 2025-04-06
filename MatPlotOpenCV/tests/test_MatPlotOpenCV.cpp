@@ -20,12 +20,13 @@ int main()
     }
 
     Figure fig1(800, 600);
-    fig1.plot(xs, ys1, Color::Blue(), 2.0f);
-    fig1.plot(xs, ys2, Color::Cyan(), 2.0f);
+    fig1.plot(xs, ys1, Color::Blue(), 2.0f, "sin(t)");
+    fig1.plot(xs, ys2, Color::Cyan(), 2.0f, "0.5*sin(t+0.5)");
     fig1.scatter({ M_PI / 2 }, { 1.0 }, Color::Red(), 6.0f);
     fig1.text(M_PI / 2, 1.05, "peak", Color::Black());
     fig1.grid(true);
     fig1.axis_tight();
+    fig1.legend(true, "northEast");
     fig1.title("Two sine waves");
     fig1.xlabel("x-axis");
     fig1.ylabel("y-axis");

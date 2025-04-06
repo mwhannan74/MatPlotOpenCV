@@ -138,6 +138,7 @@ namespace mpocv
     {
         CmdType type{ CmdType::Line };  ///< Active drawing type
         Color   color{ Color::Blue() }; ///< Optional fallback / stroke color
+        std::string label;              ///< For legend
 
         LineData        line;
         ScatterData     scatter;

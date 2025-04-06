@@ -97,9 +97,10 @@ namespace mpocv
         void plot(const std::vector<double>& x,
             const std::vector<double>& y,
             Color c = Color::Blue(),
-            float thickness = 1.f)
+            float thickness = 1.f, 
+            const std::string& label = "")
         {
-            add_line_command(x, y, c, thickness);
+            add_line_command(x, y, c, thickness, label);
         }
 
         /**
@@ -116,9 +117,10 @@ namespace mpocv
         void plot(std::vector<double>&& x,
             std::vector<double>&& y,
             Color c = Color::Blue(),
-            float thickness = 1.f)
+            float thickness = 1.f,
+            const std::string& label = "")
         {
-            add_line_command(std::move(x), std::move(y), c, thickness);
+            add_line_command(std::move(x), std::move(y), c, thickness, label);
         }
 
         /**
@@ -134,9 +136,10 @@ namespace mpocv
         void scatter(const std::vector<double>& x,
             const std::vector<double>& y,
             Color c = Color::Red(),
-            float marker_size = 4.f)
+            float marker_size = 4.f,
+            const std::string& label = "")
         {
-            add_scatter_command(x, y, c, marker_size);
+            add_scatter_command(x, y, c, marker_size, label);
         }
 
         /**
@@ -152,9 +155,10 @@ namespace mpocv
         void scatter(std::vector<double>&& x,
             std::vector<double>&& y,
             Color c = Color::Red(),
-            float marker_size = 4.f)
+            float marker_size = 4.f,
+            const std::string& label = "")
         {
-            add_scatter_command(std::move(x), std::move(y), c, marker_size);
+            add_scatter_command(std::move(x), std::move(y), c, marker_size, label);
         }
 
         /**
@@ -185,11 +189,13 @@ namespace mpocv
             double font_scale = 0.4,
             int thickness = 1,
             TextData::HAlign ha = TextData::HAlign::Left,
-            TextData::VAlign va = TextData::VAlign::Baseline)
+            TextData::VAlign va = TextData::VAlign::Baseline,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::Text;
             cmd.color = c;
+            cmd.label = label;
             cmd.txt = { x, y, msg, font_scale, thickness, ha, va };
             cmds_.push_back(std::move(cmd));
             dirty_ = true;
@@ -205,11 +211,14 @@ namespace mpocv
          * @param radius Radius of the circle.
          * @param style Line and fill styling for the circle.
          */
-        void circle(double cx, double cy, double radius, const ShapeStyle& style)
+        void circle(double cx, double cy, double radius, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::Circle;
             cmd.circle = { cx, cy, radius, style };
+            cmd.label = label;
             data_bounds_.expand(cx - radius, cy - radius);
             data_bounds_.expand(cx + radius, cy + radius);
             cmds_.push_back(std::move(cmd));
@@ -227,11 +236,14 @@ namespace mpocv
          * @param h Rectangle height.
          * @param style Line and fill styling for the rectangle.
          */
-        void rect_xywh(double x, double y, double w, double h, const ShapeStyle& style)
+        void rect_xywh(double x, double y, double w, double h, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::RectXYWH;
             cmd.rect = { x, y, x + w, y + h, style };
+            cmd.label = label;
             data_bounds_.expand(x, y);
             data_bounds_.expand(x + w, y + h);
             cmds_.push_back(std::move(cmd));
@@ -249,11 +261,14 @@ namespace mpocv
          * @param y1 Y-coordinate of the bottom-right or second corner.
          * @param style Line and fill styling for the rectangle.
          */
-        void rect_ltrb(double x0, double y0, double x1, double y1, const ShapeStyle& style)
+        void rect_ltrb(double x0, double y0, double x1, double y1, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::RectLTRB;
             cmd.rect = { x0, y0, x1, y1, style };
+            cmd.label = label;
             data_bounds_.expand(x0, y0);
             data_bounds_.expand(x1, y1);
             cmds_.push_back(std::move(cmd));
@@ -272,11 +287,14 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the rectangle.
          */
-        void rotated_rect(double cx, double cy, double w, double h, double angle_deg, const ShapeStyle& style)
+        void rotated_rect(double cx, double cy, double w, double h, double angle_deg, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::RotatedRect;
             cmd.rot_rect = { cx, cy, w, h, angle_deg, style };
+            cmd.label = label;
 
             // Expand bounds using a conservative bounding circle
             const double r = 0.5 * std::sqrt(w * w + h * h);
@@ -295,13 +313,17 @@ namespace mpocv
          * @param y Vector of y-coordinates (must match size of @p x).
          * @param style Line and fill styling for the polygon.
          */
-        void polygon(const std::vector<double>& x, const std::vector<double>& y, const ShapeStyle& style)
+        void polygon(const std::vector<double>& x, const std::vector<double>& y, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             if (x.size() != y.size() || x.empty()) return;
 
             PlotCommand cmd;
             cmd.type = CmdType::Polygon;
             cmd.polygon = { x, y, style };
+            cmd.label = label;
+
             for (size_t i = 0; i < x.size(); ++i)
                 data_bounds_.expand(x[i], y[i]);
 
@@ -321,11 +343,14 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the ellipse.
          */
-        void ellipse(double cx, double cy, double w, double h, double angle_deg, const ShapeStyle& style)
+        void ellipse(double cx, double cy, double w, double h, double angle_deg, 
+            const ShapeStyle& style,
+            const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::Ellipse;
             cmd.ellipse = { cx, cy, w, h, angle_deg, style };
+            cmd.label = label;
             data_bounds_.expand(cx - 0.5 * w, cy - 0.5 * h);
             data_bounds_.expand(cx + 0.5 * w, cy + 0.5 * h);
             cmds_.push_back(std::move(cmd));
@@ -452,6 +477,21 @@ namespace mpocv
         void ylabel(const std::string& t)
         {
             ylabel_ = t; ylabel_cache_valid_ = false; dirty_ = true;
+        }
+
+        /**
+         * @brief Enable / disable the legend box.
+         *
+         * @param on  True to draw the legend, false to hide it.
+         * @param loc Legend location keyword: "northEast", "northWest",
+         *            "southEast", "southWest", "north", "south",
+         *            "east", "west", or "center".
+         */
+        void legend(bool on = true, const std::string& loc = "northEast")
+        {
+            legend_on_ = on;
+            legend_loc_ = loc;
+            dirty_ = true;
         }
 
         // ========================================================================
@@ -709,7 +749,87 @@ namespace mpocv
                 } //switch
             }
 
-            // 7) Figure title and axis labels
+            // ------------------------------------------------------------------
+            // 7) Legend  (collect all commands that have a non‑empty label)
+            // ------------------------------------------------------------------
+            if (legend_on_)
+            {
+                std::vector<const PlotCommand*> legend_items;
+                for (const auto& c : cmds_)
+                    if (!c.label.empty())
+                        legend_items.push_back(&c);
+
+                if (!legend_items.empty())
+                {
+                    // --- compute legend box size ---
+                    int maxTextWidth = 0, textHeight = 0;
+                    for (auto* pc : legend_items)
+                    {
+                        int bl;
+                        auto sz = cv::getTextSize(pc->label, cv::FONT_HERSHEY_SIMPLEX,
+                            0.4, 1, &bl);
+                        maxTextWidth = std::max(maxTextWidth, sz.width);
+                        textHeight = std::max(textHeight, sz.height + bl);
+                    }
+                    const int sw = 20;                       // sample line length
+                    const int lh = textHeight + 6;           // line height
+                    const int boxW = sw + 8 + maxTextWidth + 10;
+                    const int boxH = lh * static_cast<int>(legend_items.size()) + 10;
+
+                    // anchor based on legend_loc_ 
+                    cv::Point anchor = legend_anchor(boxW, boxH);
+
+                    // background box
+                    cv::rectangle(canvas_,
+                        anchor,
+                        { anchor.x + boxW, anchor.y + boxH },
+                        cv::Scalar(255, 255, 255), cv::FILLED, cv::LINE_AA);
+                    cv::rectangle(canvas_,
+                        anchor,
+                        { anchor.x + boxW, anchor.y + boxH },
+                        cv::Scalar(0, 0, 0), 1);
+
+                    // draw each entry
+                    for (size_t i = 0; i < legend_items.size(); ++i)
+                    {
+                        int y = anchor.y + 5 + static_cast<int>(i) * lh + lh / 2;
+
+                        // sample symbol / line
+                        const PlotCommand* pc = legend_items[i];
+                        cv::Scalar col(pc->color.b, pc->color.g, pc->color.r);
+
+                        switch (pc->type)
+                        {
+                        case CmdType::Line:
+                            cv::line(canvas_,
+                                { anchor.x + 5,           y },
+                                { anchor.x + 5 + sw,      y },
+                                col, 2, cv::LINE_AA);
+                            break;
+                        case CmdType::Scatter:
+                        case CmdType::Circle:
+                            cv::circle(canvas_,
+                                { anchor.x + 5 + sw / 2,  y },
+                                4, col, cv::FILLED, cv::LINE_AA);
+                            break;
+                        default:
+                            cv::rectangle(canvas_,
+                                { anchor.x + 5,      y - 4 },
+                                { anchor.x + 5 + sw, y + 4 },
+                                col, cv::FILLED, cv::LINE_AA);
+                        }
+
+                        // label text
+                        cv::putText(canvas_, pc->label,
+                            { anchor.x + 5 + sw + 8, y + 4 },
+                            cv::FONT_HERSHEY_SIMPLEX,
+                            0.4, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
+                    }
+                }
+            }
+
+
+            // 8) Figure title and axis labels
             if (!title_.empty())
             {
                 cv::putText(canvas_, title_, { kMargin, kMargin / 2 },
@@ -775,6 +895,10 @@ namespace mpocv
         Axes                      axes_;            ///< Axes representing the data coordinate system.
         std::string               title_, xlabel_, ylabel_; ///< Title and axis labels.
         bool                      dirty_{ true };   ///< Flag indicating if the canvas needs re-rendering.
+        
+        // Legend
+        std::string legend_loc_{ "northEast" };
+        bool        legend_on_{ false };
 
         // Cached data bounds for fast autoscale
         Bounds                    data_bounds_;     ///< Cached bounds of the plotted data.
@@ -889,11 +1013,12 @@ namespace mpocv
          * @param thickness Thickness of the line.
          */
         template<typename VX, typename VY>
-        void add_line_command(VX&& x, VY&& y, Color c, float thickness)
+        void add_line_command(VX&& x, VY&& y, Color c, float thickness, const std::string& label = "")
         {
             PlotCommand cmd;
             cmd.type = CmdType::Line;
             cmd.color = c;
+            cmd.label = label;
             cmd.line.x = std::forward<VX>(x);
             cmd.line.y = std::forward<VY>(y);
             cmd.line.thickness = thickness;
@@ -914,11 +1039,12 @@ namespace mpocv
          * @param marker_size Size of the markers.
          */
         template<typename VX, typename VY>
-        void add_scatter_command(VX&& x, VY&& y, Color c, float marker_size)
+        void add_scatter_command(VX&& x, VY&& y, Color c, float marker_size, const std::string& label)
         {
             PlotCommand cmd;
             cmd.type = CmdType::Scatter;
             cmd.color = c;
+            cmd.label = label;
             cmd.scatter.x = std::forward<VX>(x);
             cmd.scatter.y = std::forward<VY>(y);
             cmd.scatter.marker_size = marker_size;
@@ -932,7 +1058,38 @@ namespace mpocv
             for (size_t i = 0; i < xs.size(); ++i)
                 data_bounds_.expand(xs[i], ys[i]);
         }
-    };
+
+        /**
+         * @brief Return the upper‑left pixel of the legend box for a given location.
+         *
+         * @param boxW  Legend box width  (pixels)
+         * @param boxH  Legend box height (pixels)
+         * @return cv::Point   anchor (top‑left) inside the plot area
+         */
+        cv::Point legend_anchor(int boxW, int boxH) const
+        {
+            const int left = kMarginLeft;
+            const int right = width_ - kMarginRight - boxW;
+            const int top = kMarginTop;
+            const int bottom = height_ - kMarginBottom - boxH;
+            const int hmid = left + (plot_width() - boxW) / 2;
+            const int vmid = top + (plot_height() - boxH) / 2;
+
+            if (legend_loc_ == "northWest")  return { left,  top };
+            else if (legend_loc_ == "north")      return { hmid,  top };
+            else if (legend_loc_ == "northEast")  return { right, top };
+            else if (legend_loc_ == "west")       return { left,  vmid };
+            else if (legend_loc_ == "center")     return { hmid,  vmid };
+            else if (legend_loc_ == "east")       return { right, vmid };
+            else if (legend_loc_ == "southWest")  return { left,  bottom };
+            else if (legend_loc_ == "south")      return { hmid,  bottom };
+            else /* southEast or unknown */       return { right, bottom };
+        }
+
+    }; // class Figure 
+
+
+
 
     /* ----------------------------------------------------------------------
      * Inline helper implementations
