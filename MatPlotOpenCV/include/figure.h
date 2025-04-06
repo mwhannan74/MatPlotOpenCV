@@ -526,11 +526,25 @@ namespace mpocv
                         const cv::Point center = data_to_pixel(d.cx, d.cy);
                         const int radius_px = static_cast<int>(d.radius * plot_width() / (axes_.xmax - axes_.xmin));
 
-                        if (d.style.fill_alpha > 0.0f)
-                            cv::circle(canvas_, center, radius_px, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
+                        {
+                            cv::Mat tmp = canvas_.clone();
+                            cv::circle(tmp, center, radius_px,
+                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                            blend_shape(tmp, d.style.fill_alpha);
+                        }
+                        else if (d.style.fill_alpha >= 1.0f)
+                        {
+                            cv::circle(canvas_, center, radius_px,
+                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                        }
 
                         if (d.style.thickness > 0.0f)
-                            cv::circle(canvas_, center, radius_px, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        {
+                            cv::circle(canvas_, center, radius_px,
+                                cv_color(d.style.line_color),
+                                static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        }
                         break;
                     }
                     case CmdType::RectXYWH:
@@ -539,13 +553,24 @@ namespace mpocv
                         const auto& d = cmd.rect;
                         const cv::Point p0 = data_to_pixel(d.x0, d.y0);
                         const cv::Point p1 = data_to_pixel(d.x1, d.y1);
-                        const cv::Rect r = cv::Rect(p0, p1);
+                        const cv::Rect r(p0, p1);
 
-                        if (d.style.fill_alpha > 0.0f)
-                            cv::rectangle(canvas_, r, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
+                        {
+                            cv::Mat tmp = canvas_.clone();
+                            cv::rectangle(tmp, r, cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                            blend_shape(tmp, d.style.fill_alpha);
+                        }
+                        else if (d.style.fill_alpha >= 1.0f)
+                        {
+                            cv::rectangle(canvas_, r, cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                        }
 
                         if (d.style.thickness > 0.0f)
-                            cv::rectangle(canvas_, r, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        {
+                            cv::rectangle(canvas_, r, cv_color(d.style.line_color),
+                                static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        }
                         break;
                     }
                     case CmdType::RotatedRect:
@@ -555,7 +580,7 @@ namespace mpocv
                             cv::Size2f(
                                 static_cast<float>(d.width * plot_width() / (axes_.xmax - axes_.xmin)),
                                 static_cast<float>(d.height * plot_height() / (axes_.ymax - axes_.ymin))),
-                            static_cast<float>(-d.angle_deg));  // OpenCV uses CW angle
+                            static_cast<float>(-d.angle_deg));
 
                         cv::Point2f verts[4];
                         r.points(verts);
@@ -564,11 +589,22 @@ namespace mpocv
                         for (int i = 0; i < 4; ++i)
                             pts[i] = verts[i];
 
-                        if (d.style.fill_alpha > 0.0f)
-                            cv::fillConvexPoly(canvas_, pts, cv_color(d.style.fill_color, d.style.fill_alpha), cv::LINE_AA);
+                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
+                        {
+                            cv::Mat tmp = canvas_.clone();
+                            cv::fillConvexPoly(tmp, pts, cv_color(d.style.fill_color), cv::LINE_AA);
+                            blend_shape(tmp, d.style.fill_alpha);
+                        }
+                        else if (d.style.fill_alpha >= 1.0f)
+                        {
+                            cv::fillConvexPoly(canvas_, pts, cv_color(d.style.fill_color), cv::LINE_AA);
+                        }
 
                         if (d.style.thickness > 0.0f)
-                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        {
+                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color),
+                                static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        }
                         break;
                     }
                     case CmdType::Polygon:
@@ -578,11 +614,24 @@ namespace mpocv
                         for (size_t i = 0; i < d.x.size(); ++i)
                             pts.push_back(data_to_pixel(d.x[i], d.y[i]));
 
-                        if (d.style.fill_alpha > 0.0f)
-                            cv::fillPoly(canvas_, std::vector<std::vector<cv::Point>>{ pts }, cv_color(d.style.fill_color, d.style.fill_alpha), cv::LINE_AA);
+                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
+                        {
+                            cv::Mat tmp = canvas_.clone();
+                            cv::fillPoly(tmp, std::vector<std::vector<cv::Point>>{ pts },
+                                cv_color(d.style.fill_color), cv::LINE_AA);
+                            blend_shape(tmp, d.style.fill_alpha);
+                        }
+                        else if (d.style.fill_alpha >= 1.0f)
+                        {
+                            cv::fillPoly(canvas_, std::vector<std::vector<cv::Point>>{ pts },
+                                cv_color(d.style.fill_color), cv::LINE_AA);
+                        }
 
                         if (d.style.thickness > 0.0f)
-                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        {
+                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color),
+                                static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        }
                         break;
                     }
                     case CmdType::Ellipse:
@@ -593,11 +642,25 @@ namespace mpocv
                             static_cast<int>(0.5 * d.width * plot_width() / (axes_.xmax - axes_.xmin)),
                             static_cast<int>(0.5 * d.height * plot_height() / (axes_.ymax - axes_.ymin)));
 
-                        if (d.style.fill_alpha > 0.0f)
-                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360, cv_color(d.style.fill_color, d.style.fill_alpha), cv::FILLED, cv::LINE_AA);
+                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
+                        {
+                            cv::Mat tmp = canvas_.clone();
+                            cv::ellipse(tmp, center, axes, -d.angle_deg, 0, 360,
+                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                            blend_shape(tmp, d.style.fill_alpha);
+                        }
+                        else if (d.style.fill_alpha >= 1.0f)
+                        {
+                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360,
+                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
+                        }
 
                         if (d.style.thickness > 0.0f)
-                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360, cv_color(d.style.line_color), static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        {
+                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360,
+                                cv_color(d.style.line_color),
+                                static_cast<int>(d.style.thickness), cv::LINE_AA);
+                        }
                         break;
                     }
                 } //switch
@@ -717,6 +780,18 @@ namespace mpocv
         {
             return cv::Scalar(c.b, c.g, c.r, static_cast<uchar>(alpha * 255));
         }
+
+        /**
+         * @brief Blend a shape drawn into a temporary buffer onto the main canvas using alpha.
+         *
+         * @param shape Image containing the shape (same size as canvas_).
+         * @param alpha Blend factor in range [0.0, 1.0].
+         */
+        void blend_shape(const cv::Mat& shape, float alpha)
+        {
+            cv::addWeighted(shape, alpha, canvas_, 1.0 - alpha, 0.0, canvas_);
+        }
+
 
         /* ---------- axis, grid, tick helpers ------------------------------ */
         /// @brief Computes a "nice" number for tick spacing.
