@@ -88,7 +88,23 @@ g.show();
 
 ---
 
-Here’s an updated version of your `## Build / Integration` section that reflects your refined setup, supporting both **basic integration** and **CMake subproject use**, which is now the recommended approach:
+## Example Plots
+
+### Two sine waves
+![Sine Waves](images/time_plot.jpg)
+
+### 2D Plot
+![2D](images/2d_plot.jpg)
+
+### Shapes
+![Shapes](images/shapes.jpg)
+
+
+---
+
+## Dependencies
+- C++17 compiler
+- OpenCV 4.x (core, imgproc, highgui)
 
 ---
 
