@@ -74,10 +74,7 @@ namespace mpocv
          * @param w Canvas width in pixels. Defaults to 640.
          * @param h Canvas height in pixels. Defaults to 480.
          */
-        Figure(int w = 640, int h = 480)
-            : width_(w), height_(h),
-            canvas_(h, w, CV_8UC3, cv::Scalar(255, 255, 255))
-        {}
+        Figure(int w = 640, int h = 480);
 
         // ========================================================================
         // Primary methods for drawing lines, shapes, and scatter plots.
@@ -97,11 +94,8 @@ namespace mpocv
         void plot(const std::vector<double>& x,
             const std::vector<double>& y,
             Color c = Color::Blue(),
-            float thickness = 1.f, 
-            const std::string& label = "")
-        {
-            add_line_command(x, y, c, thickness, label);
-        }
+            float thickness = 1.f,
+            const std::string& label = "");
 
         /**
          * @brief Draw a connected poly-line (rvalue overload – avoids copy).
@@ -118,10 +112,7 @@ namespace mpocv
             std::vector<double>&& y,
             Color c = Color::Blue(),
             float thickness = 1.f,
-            const std::string& label = "")
-        {
-            add_line_command(std::move(x), std::move(y), c, thickness, label);
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw unconnected markers (lvalue overload).
@@ -137,10 +128,7 @@ namespace mpocv
             const std::vector<double>& y,
             Color c = Color::Red(),
             float marker_size = 4.f,
-            const std::string& label = "")
-        {
-            add_scatter_command(x, y, c, marker_size, label);
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw unconnected markers (rvalue overload – avoids copy).
@@ -156,10 +144,7 @@ namespace mpocv
             std::vector<double>&& y,
             Color c = Color::Red(),
             float marker_size = 4.f,
-            const std::string& label = "")
-        {
-            add_scatter_command(std::move(x), std::move(y), c, marker_size, label);
-        }
+            const std::string& label = "");
 
         /**
          * @brief Place a text annotation at data coordinates.
@@ -190,16 +175,7 @@ namespace mpocv
             int thickness = 1,
             TextData::HAlign ha = TextData::HAlign::Left,
             TextData::VAlign va = TextData::VAlign::Baseline,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::Text;
-            cmd.color = c;
-            cmd.label = label;
-            cmd.txt = { x, y, msg, font_scale, thickness, ha, va };
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a filled or stroked circle centered at data coordinates.
@@ -211,19 +187,9 @@ namespace mpocv
          * @param radius Radius of the circle.
          * @param style Line and fill styling for the circle.
          */
-        void circle(double cx, double cy, double radius, 
+        void circle(double cx, double cy, double radius,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::Circle;
-            cmd.circle = { cx, cy, radius, style };
-            cmd.label = label;
-            data_bounds_.expand(cx - radius, cy - radius);
-            data_bounds_.expand(cx + radius, cy + radius);
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a rectangle using lower-left corner, width, and height.
@@ -236,19 +202,9 @@ namespace mpocv
          * @param h Rectangle height.
          * @param style Line and fill styling for the rectangle.
          */
-        void rect_xywh(double x, double y, double w, double h, 
+        void rect_xywh(double x, double y, double w, double h,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::RectXYWH;
-            cmd.rect = { x, y, x + w, y + h, style };
-            cmd.label = label;
-            data_bounds_.expand(x, y);
-            data_bounds_.expand(x + w, y + h);
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a rectangle using top-left and bottom-right corners.
@@ -261,19 +217,9 @@ namespace mpocv
          * @param y1 Y-coordinate of the bottom-right or second corner.
          * @param style Line and fill styling for the rectangle.
          */
-        void rect_ltrb(double x0, double y0, double x1, double y1, 
+        void rect_ltrb(double x0, double y0, double x1, double y1,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::RectLTRB;
-            cmd.rect = { x0, y0, x1, y1, style };
-            cmd.label = label;
-            data_bounds_.expand(x0, y0);
-            data_bounds_.expand(x1, y1);
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a rotated rectangle using center point, size, and rotation angle.
@@ -287,22 +233,9 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the rectangle.
          */
-        void rotated_rect(double cx, double cy, double w, double h, double angle_deg, 
+        void rotated_rect(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::RotatedRect;
-            cmd.rot_rect = { cx, cy, w, h, angle_deg, style };
-            cmd.label = label;
-
-            // Expand bounds using a conservative bounding circle
-            const double r = 0.5 * std::sqrt(w * w + h * h);
-            data_bounds_.expand(cx - r, cy - r);
-            data_bounds_.expand(cx + r, cy + r);
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a filled or stroked polygon from a sequence of data points.
@@ -313,23 +246,9 @@ namespace mpocv
          * @param y Vector of y-coordinates (must match size of @p x).
          * @param style Line and fill styling for the polygon.
          */
-        void polygon(const std::vector<double>& x, const std::vector<double>& y, 
+        void polygon(const std::vector<double>& x, const std::vector<double>& y,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            if (x.size() != y.size() || x.empty()) return;
-
-            PlotCommand cmd;
-            cmd.type = CmdType::Polygon;
-            cmd.polygon = { x, y, style };
-            cmd.label = label;
-
-            for (size_t i = 0; i < x.size(); ++i)
-                data_bounds_.expand(x[i], y[i]);
-
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
         /**
          * @brief Draw a filled or stroked ellipse.
@@ -343,19 +262,9 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the ellipse.
          */
-        void ellipse(double cx, double cy, double w, double h, double angle_deg, 
+        void ellipse(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
-            const std::string& label = "")
-        {
-            PlotCommand cmd;
-            cmd.type = CmdType::Ellipse;
-            cmd.ellipse = { cx, cy, w, h, angle_deg, style };
-            cmd.label = label;
-            data_bounds_.expand(cx - 0.5 * w, cy - 0.5 * h);
-            data_bounds_.expand(cx + 0.5 * w, cy + 0.5 * h);
-            cmds_.push_back(std::move(cmd));
-            dirty_ = true;
-        }
+            const std::string& label = "");
 
 
         // ========================================================================
@@ -370,10 +279,7 @@ namespace mpocv
          * @param lo Lower bound for the x-axis.
          * @param hi Upper bound for the x-axis.
          */
-        void set_xlim(double lo, double hi)
-        {
-            axes_.xmin = lo; axes_.xmax = hi; axes_.autoscale = false; dirty_ = true;
-        }
+        void set_xlim(double lo, double hi);
 
         /**
          * @brief Set the y-axis limits.
@@ -383,10 +289,7 @@ namespace mpocv
          * @param lo Lower bound for the y-axis.
          * @param hi Upper bound for the y-axis.
          */
-        void set_ylim(double lo, double hi)
-        {
-            axes_.ymin = lo; axes_.ymax = hi; axes_.autoscale = false; dirty_ = true;
-        }
+        void set_ylim(double lo, double hi);
 
         /**
          * @brief Automatically scale axes tightly around the plotted data.
@@ -397,11 +300,7 @@ namespace mpocv
          * @note Calling this will invalidate the current render and force a re-draw
          *       on the next call to render(), show(), or save().
          */
-        void axis_tight()
-        {
-            axes_.pad_frac = 0.0;
-            dirty_ = true;
-        }
+        void axis_tight();
 
         /**
          * @brief Set a fractional padding for the auto-scaled axes.
@@ -416,11 +315,7 @@ namespace mpocv
          * @note Values below 0.0 are clamped to 0.0. Any change here takes effect
          *       on the next render() or show().
          */
-        void axis_pad(double frac)
-        {
-            axes_.pad_frac = std::max(0.0, frac);
-            dirty_ = true;
-        }
+        void axis_pad(double frac);
 
         /**
          * @brief Enable or disable autoscaling.
@@ -429,7 +324,7 @@ namespace mpocv
          *
          * @param on Flag to enable autoscaling (true) or disable it (false).
          */
-        void autoscale(bool on = true) { axes_.autoscale = on; dirty_ = true; }
+        void autoscale(bool on = true);
 
         /**
          * @brief Enable or disable equal scaling.
@@ -438,7 +333,7 @@ namespace mpocv
          *
          * @param on Flag to enable equal scaling (true) or disable it (false).
          */
-        void equal_scale(bool on = true) { axes_.equal_scale = on; dirty_ = true; }
+        void equal_scale(bool on = true);
 
         /**
          * @brief Enable or disable grid lines.
@@ -447,7 +342,7 @@ namespace mpocv
          *
          * @param on Flag to enable grid lines (true) or disable them (false).
          */
-        void grid(bool on = true) { axes_.grid = on; dirty_ = true; }
+        void grid(bool on = true);
 
         /**
          * @brief Set the figure title.
@@ -456,7 +351,7 @@ namespace mpocv
          *
          * @param t Title text.
          */
-        void title(const std::string& t) { title_ = t; dirty_ = true; }
+        void title(const std::string& t);
 
         /**
          * @brief Set the x-axis label.
@@ -465,7 +360,7 @@ namespace mpocv
          *
          * @param t Label text.
          */
-        void xlabel(const std::string& t) { xlabel_ = t; dirty_ = true; }
+        void xlabel(const std::string& t);
 
         /**
          * @brief Set the y-axis label.
@@ -474,10 +369,7 @@ namespace mpocv
          *
          * @param t Label text.
          */
-        void ylabel(const std::string& t)
-        {
-            ylabel_ = t; ylabel_cache_valid_ = false; dirty_ = true;
-        }
+        void ylabel(const std::string& t);
 
         /**
          * @brief Enable / disable the legend box.
@@ -487,12 +379,7 @@ namespace mpocv
          *            "southEast", "southWest", "north", "south",
          *            "east", "west", or "center".
          */
-        void legend(bool on = true, const std::string& loc = "northEast")
-        {
-            legend_on_ = on;
-            legend_loc_ = loc;
-            dirty_ = true;
-        }
+        void legend(bool on = true, const std::string& loc = "northEast");
 
         // ========================================================================
         // Core functions for rendering, showing, and saving the figure.
@@ -504,348 +391,7 @@ namespace mpocv
          * Renders the plot by converting retained drawing commands to pixels.
          * If the figure is already rendered (i.e., not dirty), the function returns immediately.
          */
-        void render()
-        {
-            if (!dirty_) return;
-
-            // 1) Autoscale fast‑path
-            if (axes_.autoscale)
-            {
-                if (data_bounds_.valid())
-                {
-                    axes_.xmin = data_bounds_.xmin; axes_.xmax = data_bounds_.xmax;
-                    axes_.ymin = data_bounds_.ymin; axes_.ymax = data_bounds_.ymax;
-                }
-                else
-                {
-                    /* Fallback when no data is present */
-                    axes_.xmin = 0; axes_.xmax = 1; axes_.ymin = 0; axes_.ymax = 1;
-                }
-            }
-
-            // 1b) Optional padding
-            if (axes_.pad_frac > 0.0)
-            {
-                const double dx = (axes_.xmax - axes_.xmin) * axes_.pad_frac;
-                const double dy = (axes_.ymax - axes_.ymin) * axes_.pad_frac;
-                axes_.xmin -= dx;  axes_.xmax += dx;
-                axes_.ymin -= dy;  axes_.ymax += dy;
-            }
-
-            // Guarantee non-zero spans before further math
-            fix_ranges(axes_);
-
-            // 2) Equal-scale adjustment
-            if (axes_.equal_scale)
-            {
-                const double xrange = axes_.xmax - axes_.xmin;
-                const double yrange = axes_.ymax - axes_.ymin;
-                const double span = std::max(xrange, yrange);
-                const double xmid = 0.5 * (axes_.xmin + axes_.xmax);
-                const double ymid = 0.5 * (axes_.ymin + axes_.ymax);
-                axes_.xmin = xmid - span / 2;
-                axes_.xmax = xmid + span / 2;
-                axes_.ymin = ymid - span / 2;
-                axes_.ymax = ymid + span / 2;
-            }
-            fix_ranges(axes_);  /* re‑check spans */
-
-            // 3) Tick generation (single pass)
-            const TickInfo xticks = make_ticks(axes_.xmin, axes_.xmax);
-            const TickInfo yticks = make_ticks(axes_.ymin, axes_.ymax);
-
-            // 4) Clear canvas
-            canvas_.setTo(cv::Scalar(255, 255, 255));
-
-            // 5) Draw grid & axes
-            draw_grid(xticks, yticks);
-            draw_axes(xticks, yticks);
-
-            // 6) Draw retained commands
-            for (const auto& cmd : cmds_)
-            {
-                const cv::Scalar cvcol(cmd.color.b, cmd.color.g, cmd.color.r);
-
-                switch (cmd.type)
-                {
-                    case CmdType::Line:
-                    {
-                        const auto& X = cmd.line.x;
-                        const auto& Y = cmd.line.y;
-                        for (size_t i = 1; i < X.size(); ++i)
-                        {
-                            cv::line(canvas_, data_to_pixel(X[i - 1], Y[i - 1]),
-                                data_to_pixel(X[i], Y[i]),
-                                cvcol,
-                                static_cast<int>(cmd.line.thickness),
-                                cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::Scatter:
-                    {
-                        const auto& X = cmd.scatter.x;
-                        const auto& Y = cmd.scatter.y;
-                        for (size_t i = 0; i < X.size(); ++i)
-                        {
-                            cv::circle(canvas_, data_to_pixel(X[i], Y[i]),
-                                static_cast<int>(cmd.scatter.marker_size),
-                                cvcol, cv::FILLED, cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::Text:
-                    {
-                        const cv::Point2i p = anchored_text_pos(cmd.txt);
-                        cv::putText(canvas_, cmd.txt.text, p,
-                            cv::FONT_HERSHEY_SIMPLEX,
-                            cmd.txt.font_scale, cvcol,
-                            cmd.txt.thickness, cv::LINE_AA);
-                        break;
-                    }
-                    case CmdType::Circle:
-                    {
-                        const auto& d = cmd.circle;
-                        const cv::Point center = data_to_pixel(d.cx, d.cy);
-                        const int radius_px = static_cast<int>(d.radius * plot_width() / (axes_.xmax - axes_.xmin));
-
-                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
-                        {
-                            cv::Mat tmp = canvas_.clone();
-                            cv::circle(tmp, center, radius_px,
-                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                            blend_shape(tmp, d.style.fill_alpha);
-                        }
-                        else if (d.style.fill_alpha >= 1.0f)
-                        {
-                            cv::circle(canvas_, center, radius_px,
-                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                        }
-
-                        if (d.style.thickness > 0.0f)
-                        {
-                            cv::circle(canvas_, center, radius_px,
-                                cv_color(d.style.line_color),
-                                static_cast<int>(d.style.thickness), cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::RectXYWH:
-                    case CmdType::RectLTRB:
-                    {
-                        const auto& d = cmd.rect;
-                        const cv::Point p0 = data_to_pixel(d.x0, d.y0);
-                        const cv::Point p1 = data_to_pixel(d.x1, d.y1);
-                        const cv::Rect r(p0, p1);
-
-                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
-                        {
-                            cv::Mat tmp = canvas_.clone();
-                            cv::rectangle(tmp, r, cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                            blend_shape(tmp, d.style.fill_alpha);
-                        }
-                        else if (d.style.fill_alpha >= 1.0f)
-                        {
-                            cv::rectangle(canvas_, r, cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                        }
-
-                        if (d.style.thickness > 0.0f)
-                        {
-                            cv::rectangle(canvas_, r, cv_color(d.style.line_color),
-                                static_cast<int>(d.style.thickness), cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::RotatedRect:
-                    {
-                        const auto& d = cmd.rot_rect;
-                        cv::RotatedRect r(data_to_pixel(d.cx, d.cy),
-                            cv::Size2f(
-                                static_cast<float>(d.width * plot_width() / (axes_.xmax - axes_.xmin)),
-                                static_cast<float>(d.height * plot_height() / (axes_.ymax - axes_.ymin))),
-                            static_cast<float>(-d.angle_deg));
-
-                        cv::Point2f verts[4];
-                        r.points(verts);
-
-                        std::vector<cv::Point> pts(4);
-                        for (int i = 0; i < 4; ++i)
-                            pts[i] = verts[i];
-
-                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
-                        {
-                            cv::Mat tmp = canvas_.clone();
-                            cv::fillConvexPoly(tmp, pts, cv_color(d.style.fill_color), cv::LINE_AA);
-                            blend_shape(tmp, d.style.fill_alpha);
-                        }
-                        else if (d.style.fill_alpha >= 1.0f)
-                        {
-                            cv::fillConvexPoly(canvas_, pts, cv_color(d.style.fill_color), cv::LINE_AA);
-                        }
-
-                        if (d.style.thickness > 0.0f)
-                        {
-                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color),
-                                static_cast<int>(d.style.thickness), cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::Polygon:
-                    {
-                        const auto& d = cmd.polygon;
-                        std::vector<cv::Point> pts;
-                        for (size_t i = 0; i < d.x.size(); ++i)
-                            pts.push_back(data_to_pixel(d.x[i], d.y[i]));
-
-                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
-                        {
-                            cv::Mat tmp = canvas_.clone();
-                            cv::fillPoly(tmp, std::vector<std::vector<cv::Point>>{ pts },
-                                cv_color(d.style.fill_color), cv::LINE_AA);
-                            blend_shape(tmp, d.style.fill_alpha);
-                        }
-                        else if (d.style.fill_alpha >= 1.0f)
-                        {
-                            cv::fillPoly(canvas_, std::vector<std::vector<cv::Point>>{ pts },
-                                cv_color(d.style.fill_color), cv::LINE_AA);
-                        }
-
-                        if (d.style.thickness > 0.0f)
-                        {
-                            cv::polylines(canvas_, pts, true, cv_color(d.style.line_color),
-                                static_cast<int>(d.style.thickness), cv::LINE_AA);
-                        }
-                        break;
-                    }
-                    case CmdType::Ellipse:
-                    {
-                        const auto& d = cmd.ellipse;
-                        const cv::Point center = data_to_pixel(d.cx, d.cy);
-                        const cv::Size axes(
-                            static_cast<int>(0.5 * d.width * plot_width() / (axes_.xmax - axes_.xmin)),
-                            static_cast<int>(0.5 * d.height * plot_height() / (axes_.ymax - axes_.ymin)));
-
-                        if (d.style.fill_alpha > 0.0f && d.style.fill_alpha < 1.0f)
-                        {
-                            cv::Mat tmp = canvas_.clone();
-                            cv::ellipse(tmp, center, axes, -d.angle_deg, 0, 360,
-                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                            blend_shape(tmp, d.style.fill_alpha);
-                        }
-                        else if (d.style.fill_alpha >= 1.0f)
-                        {
-                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360,
-                                cv_color(d.style.fill_color), cv::FILLED, cv::LINE_AA);
-                        }
-
-                        if (d.style.thickness > 0.0f)
-                        {
-                            cv::ellipse(canvas_, center, axes, -d.angle_deg, 0, 360,
-                                cv_color(d.style.line_color),
-                                static_cast<int>(d.style.thickness), cv::LINE_AA);
-                        }
-                        break;
-                    }
-                } //switch
-            }
-
-            // ------------------------------------------------------------------
-            // 7) Legend  (collect all commands that have a non‑empty label)
-            // ------------------------------------------------------------------
-            if (legend_on_)
-            {
-                std::vector<const PlotCommand*> legend_items;
-                for (const auto& c : cmds_)
-                    if (!c.label.empty())
-                        legend_items.push_back(&c);
-
-                if (!legend_items.empty())
-                {
-                    // --- compute legend box size ---
-                    int maxTextWidth = 0, textHeight = 0;
-                    for (auto* pc : legend_items)
-                    {
-                        int bl;
-                        auto sz = cv::getTextSize(pc->label, cv::FONT_HERSHEY_SIMPLEX,
-                            0.4, 1, &bl);
-                        maxTextWidth = std::max(maxTextWidth, sz.width);
-                        textHeight = std::max(textHeight, sz.height + bl);
-                    }
-                    const int sw = 20;                       // sample line length
-                    const int lh = textHeight + 6;           // line height
-                    const int boxW = sw + 8 + maxTextWidth + 10;
-                    const int boxH = lh * static_cast<int>(legend_items.size()) + 10;
-
-                    // anchor based on legend_loc_ 
-                    cv::Point anchor = legend_anchor(boxW, boxH);
-
-                    // background box
-                    cv::rectangle(canvas_,
-                        anchor,
-                        { anchor.x + boxW, anchor.y + boxH },
-                        cv::Scalar(255, 255, 255), cv::FILLED, cv::LINE_AA);
-                    cv::rectangle(canvas_,
-                        anchor,
-                        { anchor.x + boxW, anchor.y + boxH },
-                        cv::Scalar(0, 0, 0), 1);
-
-                    // draw each entry
-                    for (size_t i = 0; i < legend_items.size(); ++i)
-                    {
-                        int y = anchor.y + 5 + static_cast<int>(i) * lh + lh / 2;
-
-                        // sample symbol / line
-                        const PlotCommand* pc = legend_items[i];
-                        cv::Scalar col(pc->color.b, pc->color.g, pc->color.r);
-
-                        switch (pc->type)
-                        {
-                        case CmdType::Line:
-                            cv::line(canvas_,
-                                { anchor.x + 5,           y },
-                                { anchor.x + 5 + sw,      y },
-                                col, 2, cv::LINE_AA);
-                            break;
-                        case CmdType::Scatter:
-                        case CmdType::Circle:
-                            cv::circle(canvas_,
-                                { anchor.x + 5 + sw / 2,  y },
-                                4, col, cv::FILLED, cv::LINE_AA);
-                            break;
-                        default:
-                            cv::rectangle(canvas_,
-                                { anchor.x + 5,      y - 4 },
-                                { anchor.x + 5 + sw, y + 4 },
-                                col, cv::FILLED, cv::LINE_AA);
-                        }
-
-                        // label text
-                        cv::putText(canvas_, pc->label,
-                            { anchor.x + 5 + sw + 8, y + 4 },
-                            cv::FONT_HERSHEY_SIMPLEX,
-                            0.4, cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
-                    }
-                }
-            }
-
-
-            // 8) Figure title and axis labels
-            if (!title_.empty())
-            {
-                cv::putText(canvas_, title_, { kMargin, kMargin / 2 },
-                    cv::FONT_HERSHEY_SIMPLEX, 0.6,
-                    cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
-            }
-            if (!xlabel_.empty())
-            {
-                cv::putText(canvas_, xlabel_, { width_ / 2 - 40, height_ - 10 },
-                    cv::FONT_HERSHEY_SIMPLEX, 0.5,
-                    cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
-            }
-            draw_ylabel();   // rotated y-label
-
-            dirty_ = false;  // canvas is now up-to-date
-        }
+        void render();
 
         /**
          * @brief Render (if needed) and display the figure in an OpenCV window.
@@ -854,12 +400,7 @@ namespace mpocv
          *
          * @param window_name Name of the OpenCV window. Defaults to "Figure".
          */
-        void show(const std::string& window_name = "Figure")
-        {
-            if (dirty_) render();
-            cv::imshow(window_name, canvas_);
-            cv::waitKey(1);   /* small delay so the window appears */
-        }
+        void show(const std::string& window_name = "Figure");
 
         /**
          * @brief Render (if needed) and save the figure to disk.
@@ -869,13 +410,7 @@ namespace mpocv
          *
          * @param filename Output file path.
          */
-        void save(const std::string& filename)
-        {
-            if (dirty_) render();
-            cv::imwrite(filename, canvas_);
-        }
-
-
+        void save(const std::string& filename);
 
 
     private:
@@ -922,15 +457,7 @@ namespace mpocv
          * @param y Data y value.
          * @return cv::Point representing the pixel coordinates.
          */
-        cv::Point2i data_to_pixel(double x, double y) const
-        {
-            const double x_frac = (x - axes_.xmin) / (axes_.xmax - axes_.xmin);
-            const double y_frac = (y - axes_.ymin) / (axes_.ymax - axes_.ymin);
-
-            const int px = kMarginLeft + static_cast<int>(x_frac * plot_width() + 0.5);
-            const int py = height_ - kMarginBottom - static_cast<int>(y_frac * plot_height() + 0.5);
-            return { px, py };
-        }
+        cv::Point2i data_to_pixel(double x, double y) const;
 
         /**
          * @brief Convert a custom Color to OpenCV cv::Scalar with optional alpha.
@@ -943,10 +470,7 @@ namespace mpocv
          * @param alpha Alpha multiplier in range [0.0, 1.0]. Default is 1.0 (opaque).
          * @return cv::Scalar The OpenCV-compatible color (B, G, R, A).
          */
-        cv::Scalar cv_color(const Color& c, float alpha = 1.0f)
-        {
-            return cv::Scalar(c.b, c.g, c.r, static_cast<uchar>(alpha * 255));
-        }
+        cv::Scalar cv_color(const Color& c, float alpha = 1.0f);
 
         /**
          * @brief Blend a shape drawn into a temporary buffer onto the main canvas using alpha.
@@ -954,21 +478,21 @@ namespace mpocv
          * @param shape Image containing the shape (same size as canvas_).
          * @param alpha Blend factor in range [0.0, 1.0].
          */
-        void blend_shape(const cv::Mat& shape, float alpha)
-        {
-            cv::addWeighted(shape, alpha, canvas_, 1.0 - alpha, 0.0, canvas_);
-        }
+        void blend_shape(const cv::Mat& shape, float alpha);
 
 
         /* ---------- axis, grid, tick helpers ------------------------------ */
         /// @brief Computes a "nice" number for tick spacing.
-        static double  nice_num(double range, bool round);
+        static double nice_num(double range, bool round);
+
         /// @brief Generates tick positions and formatted labels.
         static TickInfo make_ticks(double lo, double hi, int target = 6);
+
         /// @brief Draws the axis lines, ticks, and numeric labels.
-        void           draw_axes(const TickInfo& xt, const TickInfo& yt);
+        void draw_axes(const TickInfo& xt, const TickInfo& yt);
+
         /// @brief Draws grid lines corresponding to tick positions.
-        void           draw_grid(const TickInfo& xt, const TickInfo& yt);
+        void draw_grid(const TickInfo& xt, const TickInfo& yt);
 
         /* ---------- rotated y-label helper -------------------------------- */
         /// @brief Draws and caches the rotated y-axis label.
@@ -976,22 +500,7 @@ namespace mpocv
 
         /* ---------- text alignment helper --------------------------------- */
         /// @brief Computes the anchored text position based on alignment.
-        cv::Point2i anchored_text_pos(const TextData& td) const
-        {
-            int bl = 0;
-            const auto sz = cv::getTextSize(td.text, cv::FONT_HERSHEY_SIMPLEX,
-                td.font_scale, td.thickness, &bl);
-            cv::Point2i p = data_to_pixel(td.x, td.y);
-
-            if (td.halign == TextData::HAlign::Center)       p.x -= sz.width / 2;
-            else if (td.halign == TextData::HAlign::Right)   p.x -= sz.width;
-
-            if (td.valign == TextData::VAlign::Center)       p.y += sz.height / 2;
-            else if (td.valign == TextData::VAlign::Top)     p.y += sz.height;
-            else if (td.valign == TextData::VAlign::Bottom)  p.y -= bl;
-
-            return p;
-        }
+        cv::Point2i anchored_text_pos(const TextData& td) const;
 
         /* ---------- safety helpers ---------------------------------------- */
         /// @brief Ensures that the span between lo and hi is non-zero.
@@ -1053,11 +562,7 @@ namespace mpocv
             dirty_ = true;
         }
         /// @brief Expands the cached data bounds using the given vectors.
-        void expand_bounds(const std::vector<double>& xs, const std::vector<double>& ys)
-        {
-            for (size_t i = 0; i < xs.size(); ++i)
-                data_bounds_.expand(xs[i], ys[i]);
-        }
+        void expand_bounds(const std::vector<double>& xs, const std::vector<double>& ys);
 
         /**
          * @brief Return the upper‑left pixel of the legend box for a given location.
@@ -1066,205 +571,8 @@ namespace mpocv
          * @param boxH  Legend box height (pixels)
          * @return cv::Point   anchor (top‑left) inside the plot area
          */
-        cv::Point legend_anchor(int boxW, int boxH) const
-        {
-            const int left = kMarginLeft;
-            const int right = width_ - kMarginRight - boxW;
-            const int top = kMarginTop;
-            const int bottom = height_ - kMarginBottom - boxH;
-            const int hmid = left + (plot_width() - boxW) / 2;
-            const int vmid = top + (plot_height() - boxH) / 2;
-
-            if (legend_loc_ == "northWest")  return { left,  top };
-            else if (legend_loc_ == "north")      return { hmid,  top };
-            else if (legend_loc_ == "northEast")  return { right, top };
-            else if (legend_loc_ == "west")       return { left,  vmid };
-            else if (legend_loc_ == "center")     return { hmid,  vmid };
-            else if (legend_loc_ == "east")       return { right, vmid };
-            else if (legend_loc_ == "southWest")  return { left,  bottom };
-            else if (legend_loc_ == "south")      return { hmid,  bottom };
-            else /* southEast or unknown */       return { right, bottom };
-        }
+        cv::Point legend_anchor(int boxW, int boxH) const;
 
     }; // class Figure 
-
-
-
-
-    /* ----------------------------------------------------------------------
-     * Inline helper implementations
-     * --------------------------------------------------------------------*/
-
-     /// @brief Choose a "nice" number for tick spacing.
-    inline double Figure::nice_num(double range, bool round)
-    {
-        if (range <= 0) range = 1.0;  /* numerical robustness */
-        const double expv = std::floor(std::log10(range));
-        const double f = range / std::pow(10.0, expv);   /* 1‑10 */
-
-        double nf = 1;
-        if (round)
-        {
-            if (f < 1.5)      nf = 1;
-            else if (f < 3)   nf = 2;
-            else if (f < 7)   nf = 5;
-            else              nf = 10;
-        }
-        else
-        {
-            if (f <= 1)       nf = 1;
-            else if (f <= 2)  nf = 2;
-            else if (f <= 5)  nf = 5;
-            else              nf = 10;
-        }
-        return nf * std::pow(10.0, expv);
-    }
-
-    /// @brief Build tick positions and formatted labels.
-    inline TickInfo Figure::make_ticks(double lo, double hi, int target)
-    {
-        const double range = nice_num(hi - lo, false);
-        const double step = nice_num(range / (target - 1), true);
-        const double graph_lo = std::floor(lo / step) * step;
-        const double graph_hi = std::ceil(hi / step) * step;
-
-        TickInfo out;
-        for (double v = graph_lo; v <= graph_hi + 0.5 * step; v += step)
-        {
-            if (v < lo - 1e-12 || v > hi + 1e-12)        // <‑‑ clip here
-                continue;
-
-            out.locs.push_back(v);
-
-            std::ostringstream ss;
-            ss << std::fixed << std::setprecision((step < 1) ? 1 : 0) << v;
-            out.labels.push_back(ss.str());
-        }
-        return out;
-    }
-
-    /// @brief Draw axis lines, ticks and numeric labels.
-    inline void Figure::draw_axes(const TickInfo& xticks, const TickInfo& yticks)
-    {
-        const cv::Scalar black(0, 0, 0);
-        const int font = cv::FONT_HERSHEY_SIMPLEX;
-
-        /* X‑axis ---------------------------------------------------------------- */
-        cv::line(canvas_, { kMarginLeft, height_ - kMarginBottom },
-            { width_ - kMarginRight, height_ - kMarginBottom },
-            black, 1);
-
-        for (size_t i = 0; i < xticks.locs.size(); ++i)
-        {
-            cv::Point2i p = data_to_pixel(xticks.locs[i], axes_.ymin);
-            cv::line(canvas_, { p.x, p.y },
-                { p.x, p.y + kTickLen }, black, 1);
-
-            cv::putText(canvas_, xticks.labels[i],
-                { p.x - 10, p.y + 18 },
-                font, 0.4, black, 1, cv::LINE_AA);
-        }
-
-        /* Y‑axis ---------------------------------------------------------------- */
-        cv::line(canvas_, { kMarginLeft, kMarginTop },
-            { kMarginLeft, height_ - kMarginBottom },
-            black, 1);
-
-        for (size_t i = 0; i < yticks.locs.size(); ++i)
-        {
-            cv::Point2i p = data_to_pixel(axes_.xmin, yticks.locs[i]);
-            cv::line(canvas_, { p.x - kTickLen, p.y },
-                { p.x, p.y }, black, 1);
-
-            constexpr int labelOffset = 30;          // pixels left of tick
-            cv::putText(canvas_, yticks.labels[i],
-                { p.x - labelOffset, p.y + 4 },
-                font, 0.4, black, 1, cv::LINE_AA);
-        }
-    }
-
-
-    /// @brief Draw grid lines matching the tick positions.
-    inline void Figure::draw_grid(const TickInfo& xticks, const TickInfo& yticks)
-    {
-        if (!axes_.grid) return;
-
-        const cv::Scalar light(220, 220, 220);   // light grey
-
-        /* vertical grid lines -------------------------------------------------- */
-        for (double xv : xticks.locs)
-        {
-            if (xv < axes_.xmin || xv > axes_.xmax) continue;   // safety
-
-            const cv::Point2i p1 = data_to_pixel(xv, axes_.ymin);
-            const cv::Point2i p2 = data_to_pixel(xv, axes_.ymax);
-            cv::line(canvas_, p1, p2, light, 1, cv::LINE_AA);
-        }
-
-        /* horizontal grid lines ------------------------------------------------ */
-        for (double yv : yticks.locs)
-        {
-            if (yv < axes_.ymin || yv > axes_.ymax) continue;   // safety
-
-            const cv::Point2i p1 = data_to_pixel(axes_.xmin, yv);
-            const cv::Point2i p2 = data_to_pixel(axes_.xmax, yv);
-            cv::line(canvas_, p1, p2, light, 1, cv::LINE_AA);
-        }
-    }
-
-
-    /// @brief Rotate and blit y-axis label (cached).
-    inline void Figure::draw_ylabel()
-    {
-        if (ylabel_.empty()) return;
-
-        if (!ylabel_cache_valid_)
-        {
-            int baseline = 0;
-            const auto sz = cv::getTextSize(ylabel_, cv::FONT_HERSHEY_SIMPLEX,
-                0.5, 1, &baseline);
-
-            cv::Mat txt(sz.height + baseline, sz.width, CV_8UC3,
-                cv::Scalar(255, 255, 255));
-            cv::putText(txt, ylabel_, { 0, sz.height },
-                cv::FONT_HERSHEY_SIMPLEX, 0.5,
-                cv::Scalar(0, 0, 0), 1, cv::LINE_AA);
-
-            cv::rotate(txt, ylabel_cache_, cv::ROTATE_90_COUNTERCLOCKWISE);
-            ylabel_cache_valid_ = true;
-        }
-
-        /* Top-left corner for copy */
-        const int label_offset = 55;  // or tweak as needed
-        const int x = kMarginLeft - label_offset;
-        
-        const int y = kMarginTop + (plot_height() - ylabel_cache_.rows) / 2;        
-
-        if (x >= 0 && y >= 0 &&
-            x + ylabel_cache_.cols <= canvas_.cols &&
-            y + ylabel_cache_.rows <= canvas_.rows)
-        {
-            ylabel_cache_.copyTo(canvas_(cv::Rect(x, y,
-                ylabel_cache_.cols,
-                ylabel_cache_.rows)));
-        }
-    }
-
-    /// @brief Ensures that the span between lo and hi is non-zero.
-    inline void Figure::ensure_nonzero_span(double& lo, double& hi)
-    {
-        if (lo == hi)
-        {
-            const double eps = (std::abs(lo) > 1e-12)
-                ? std::abs(lo) * 1e-3 : 1e-3;
-            lo -= eps; hi += eps;
-        }
-    }
-    /// @brief Fixes the axes ranges to ensure non-zero spans.
-    inline void Figure::fix_ranges(Axes& a)
-    {
-        ensure_nonzero_span(a.xmin, a.xmax);
-        ensure_nonzero_span(a.ymin, a.ymax);
-    }
 
 } // namespace mpocv
