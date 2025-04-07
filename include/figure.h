@@ -76,6 +76,7 @@ namespace mpocv
          */
         Figure(int w = 640, int h = 480);
 
+
         // ========================================================================
         // Primary methods for drawing lines, shapes, and scatter plots.
         // ========================================================================
@@ -381,6 +382,7 @@ namespace mpocv
          */
         void legend(bool on = true, const std::string& loc = "northEast");
 
+
         // ========================================================================
         // Core functions for rendering, showing, and saving the figure.
         // ========================================================================
@@ -494,6 +496,9 @@ namespace mpocv
         /// @brief Draws grid lines corresponding to tick positions.
         void draw_grid(const TickInfo& xt, const TickInfo& yt);
 
+        /// @brief Expands the cached data bounds using the given vectors.
+        void expand_bounds(const std::vector<double>& xs, const std::vector<double>& ys);
+
         /* ---------- rotated y-label helper -------------------------------- */
         /// @brief Draws and caches the rotated y-axis label.
         void draw_ylabel();
@@ -505,8 +510,18 @@ namespace mpocv
         /* ---------- safety helpers ---------------------------------------- */
         /// @brief Ensures that the span between lo and hi is non-zero.
         static void ensure_nonzero_span(double& lo, double& hi);
+        
         /// @brief Fixes the ranges of the axes to ensure non-zero spans.
         static void fix_ranges(Axes& a);
+
+        /**
+         * @brief Return the upper‑left pixel of the legend box for a given location.
+         *
+         * @param boxW  Legend box width  (pixels)
+         * @param boxH  Legend box height (pixels)
+         * @return cv::Point   anchor (top‑left) inside the plot area
+         */
+        cv::Point legend_anchor(int boxW, int boxH) const;
 
         /* ---------- internal helpers to add commands ---------------------- */
         /**
@@ -535,6 +550,7 @@ namespace mpocv
             cmds_.push_back(std::move(cmd));
             dirty_ = true;
         }
+
         /**
          * @brief Adds a scatter drawing command.
          *
@@ -561,17 +577,6 @@ namespace mpocv
             cmds_.push_back(std::move(cmd));
             dirty_ = true;
         }
-        /// @brief Expands the cached data bounds using the given vectors.
-        void expand_bounds(const std::vector<double>& xs, const std::vector<double>& ys);
-
-        /**
-         * @brief Return the upper‑left pixel of the legend box for a given location.
-         *
-         * @param boxW  Legend box width  (pixels)
-         * @param boxH  Legend box height (pixels)
-         * @return cv::Point   anchor (top‑left) inside the plot area
-         */
-        cv::Point legend_anchor(int boxW, int boxH) const;
 
     }; // class Figure 
 

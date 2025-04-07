@@ -84,15 +84,35 @@ g.show();
 
 ---
 
+Here’s an updated version of your `## Build / Integration` section that reflects your refined setup, supporting both **basic integration** and **CMake subproject use**, which is now the recommended approach:
+
+---
+
 ## Build / Integration
 
-1.  Add the `include/` folder to your include path.  
-2.  Link against OpenCV modules **core**, **imgproc**, **highgui**.  
-   ```cmake
-   find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
-   add_executable(app main.cpp)
-   target_link_libraries(app PRIVATE ${OpenCV_LIBS})
-   ```
+The easiest and most reliable way to use MatPlotOpenCV is to **clone it directly** and add it to your own CMake project:
+
+```bash
+git clone https://github.com/mwhannan74/MatPlotOpenCV.git
+```
+
+Then in your own `CMakeLists.txt`:
+
+```cmake
+add_subdirectory(MatPlotOpenCV)  # path to the cloned repo
+
+find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
+
+add_executable(myapp main.cpp)
+target_link_libraries(myapp PRIVATE mpocv ${OpenCV_LIBS})
+```
+
+This gives you:
+
+- Automatic include paths
+- Working compiled `.cpp` source
+- No install step needed
+
 ---
 
 ## Notes & Limits
