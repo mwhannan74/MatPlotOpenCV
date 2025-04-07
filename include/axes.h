@@ -1,3 +1,11 @@
+// =============================================================================
+//  MatPlotOpenCV - Minimal 2D plotting library using OpenCV
+//  Copyright (c) 2025 Michael Hannan
+//
+//  This file is part of MatPlotOpenCV and is licensed under the BSD 3-Clause
+//  License. See the LICENSE file in the project root for full terms.
+// =============================================================================
+
 #pragma once
 #include <limits>
 

@@ -1,4 +1,13 @@
-﻿cmake_minimum_required(VERSION 3.14)
+﻿# ------------------------------------------------------------------------------
+#  MatPlotOpenCV - Minimal 2D plotting library using OpenCV
+#  Copyright (c) 202t Michael Hannan
+#
+#  Licensed under the BSD 3-Clause License.
+#  See the LICENSE file in the project root for details.
+# ------------------------------------------------------------------------------
+
+
+cmake_minimum_required(VERSION 3.14)
 project(MatPlotOpenCV LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)

@@ -1,5 +1,9 @@
 # MatPlotOpenCV
 
+[![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
+Minimal 2D plotting library using OpenCV.
+
 MatPlotOpenCV is a lightweight, header‑only plotting helper that offers a MATLAB / matplotlib‑style API for basic 2‑D graphics—lines, scatter, text, and simple shapes—without pulling in a full GUI or OpenGL backend. Because it relies solely on OpenCV image routines, it’s thread‑safe: you can create and render figures anywhere in your code, and drawing isn’t executed until you explicitly call `render()`.
 
 The goal isn’t to replace full‑featured tools like matplotlib, but to give you a real‑time, minimal‑dependency option for debugging algorithms or visualising quick diagnostics. Features cover the essentials: line and marker styling, filled shapes with alpha, autoscaling (tight or padded), equal‑scale axes, grid, and legends.
@@ -121,3 +125,10 @@ This gives you:
 * Vector output (SVG/PDF) and subplots are not yet implemented.
 * Threadsafe as long as each thread owns its own `Figure`.
 
+---
+
+## License
+
+This project is licensed under the [BSD 3-Clause License](./LICENSE).  
+You are free to use, modify, and redistribute the code with proper attribution.  
+See the LICENSE file for full details.
