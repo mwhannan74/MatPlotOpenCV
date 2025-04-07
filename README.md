@@ -12,6 +12,19 @@ Implementation is pure C++17 with OpenCV 4.x as the “canvas.” Rendering is 
 
 ---
 
+## Example Plots
+
+### Two sine waves
+![Sine Waves](images/time_plot.jpg)
+
+### 2D Plot
+![2D](images/2d_plot.jpg)
+
+### Shapes
+![Shapes](images/shapes.jpg)
+
+---
+
 ## Quick Start
 
 ```cpp
@@ -85,20 +98,6 @@ g.grid(true);
 g.legend(true,"southWest");
 g.show();
 ```
-
----
-
-## Example Plots
-
-### Two sine waves
-![Sine Waves](images/time_plot.jpg)
-
-### 2D Plot
-![2D](images/2d_plot.jpg)
-
-### Shapes
-![Shapes](images/shapes.jpg)
-
 
 ---
 
