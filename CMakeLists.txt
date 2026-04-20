@@ -1,61 +1,70 @@
-﻿# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  MatPlotOpenCV - Minimal 2D plotting library using OpenCV
-#  Copyright (c) 202t Michael Hannan
+#  Copyright (c) 2025 Michael Hannan
 #
 #  Licensed under the BSD 3-Clause License.
 #  See the LICENSE file in the project root for details.
 # ------------------------------------------------------------------------------
 
-
-cmake_minimum_required(VERSION 3.14)
-project(MatPlotOpenCV LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(MatPlotOpenCV VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# ------------------------------------------------------------------
-# Find OpenCV
-# ------------------------------------------------------------------
-# Adjust this path if your OpenCV is installed elsewhere
-set(OpenCV_DIR "C:/opencv/build/x64/vc16/lib/")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_paths.cmake")
+
+option(MATPLOTOPENCV_BUILD_DEMO "Build the demo executable." ON)
+option(MATPLOTOPENCV_BUILD_DOCS "Build API documentation with Doxygen." ON)
+
+if(MATPLOTOPENCV_OPENCV_DIR)
+    set(OpenCV_DIR "${MATPLOTOPENCV_OPENCV_DIR}")
+endif()
+
 find_package(OpenCV 4.5 REQUIRED COMPONENTS core highgui imgproc)
 
-# ------------------------------------------------------------------
-# MatPlotOpenCV Library
-# ------------------------------------------------------------------
 add_library(mpocv STATIC
-    src/figure.cpp           # Implementation source file
+    src/figure.cpp
+)
+add_library(MatPlotOpenCV::mpocv ALIAS mpocv)
+
+target_include_directories(mpocv
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
 
-target_include_directories(mpocv PUBLIC include)   # Header path
-target_link_libraries(mpocv PUBLIC
-    opencv_core
-    opencv_highgui
-    opencv_imgproc
+target_link_libraries(mpocv
+    PUBLIC
+        opencv_core
+        opencv_highgui
+        opencv_imgproc
 )
 
-# ------------------------------------------------------------------
-# Example / test executable
-# ------------------------------------------------------------------
-add_executable(test_MatPlotOpenCV tests/test_MatPlotOpenCV.cpp)
-target_link_libraries(test_MatPlotOpenCV PRIVATE mpocv)
+if(MATPLOTOPENCV_BUILD_DEMO)
+    add_executable(matplotopencv_demo
+        demo/main_demo.cpp
+    )
 
-# ------------------------------------------------------------------
-# Doxygen Documentation
-# ------------------------------------------------------------------
-find_package(Doxygen REQUIRED)
+    target_link_libraries(matplotopencv_demo
+        PRIVATE
+            MatPlotOpenCV::mpocv
+    )
+endif()
 
-set(PROJECT_VERSION 0.1)
+if(MATPLOTOPENCV_BUILD_DOCS)
+    find_package(Doxygen REQUIRED)
 
-configure_file(
-    docs/Doxyfile.in
-    ${CMAKE_BINARY_DIR}/Doxyfile
-    @ONLY
-)
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+        @ONLY
+    )
 
-add_custom_target(doc ALL
-    COMMAND ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    COMMENT "Generating API documentation with Doxygen"
-    VERBATIM
-)
+    add_custom_target(doc
+        COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
+    )
+endif()

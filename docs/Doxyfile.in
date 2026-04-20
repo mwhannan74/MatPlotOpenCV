@@ -19,7 +19,7 @@ OPTIMIZE_OUTPUT_JAVA   = NO
 #---------------------------------------------------------------------------  
 # Input  
 #---------------------------------------------------------------------------  
-INPUT                  = MatPlotOpenCV/include/
+INPUT                  = @CMAKE_SOURCE_DIR@/include
 FILE_PATTERNS          = *.h *.hpp
 RECURSIVE              = YES
 

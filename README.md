@@ -4,11 +4,9 @@
 
 Minimal 2D plotting library using OpenCV.
 
-MatPlotOpenCV is a lightweight, header‑only plotting helper that offers a MATLAB / matplotlib‑style API for basic 2‑D graphics—lines, scatter, text, and simple shapes—without pulling in a full GUI or OpenGL backend. Because it relies solely on OpenCV image routines, it’s thread‑safe: you can create and render figures anywhere in your code, and drawing isn’t executed until you explicitly call `render()`.
+MatPlotOpenCV is a lightweight C++17 plotting library that offers a MATLAB / matplotlib-style API for basic 2-D graphics: lines, scatter, text, and simple shapes, without pulling in a full GUI or OpenGL backend. It uses OpenCV 4.x as the rendering surface, so figures are drawn directly into a `cv::Mat` and displayed with `cv::imshow`.
 
-The goal isn’t to replace full‑featured tools like matplotlib, but to give you a real‑time, minimal‑dependency option for debugging algorithms or visualising quick diagnostics. Features cover the essentials: line and marker styling, filled shapes with alpha, autoscaling (tight or padded), equal‑scale axes, grid, and legends.
-
-Implementation is pure C++17 with OpenCV 4.x as the “canvas.” Rendering is literally pixel drawing on a `cv::Mat`; you view results with `cv::imshow`. (Zoom/pan requires an OpenCV build that includes Qt support.)
+The library is implemented as a compiled target with public headers in `include/` and implementation in `src/`. The repository also includes an optional consumer-style demo under `demo/`.
 
 ---
 
@@ -31,15 +29,15 @@ Implementation is pure C++17 with OpenCV 4.x as the “canvas.” Rendering is 
 #include "figure.h"
 using namespace mpocv;
 
-Figure fig(640,480);
+Figure fig(640, 480);
 
 fig.plot(x, y, Color::Blue(), 2.0f, "signal");
 fig.scatter(px, py, Color::Red(), 5.0f, "events");
 fig.text(3.14, 1.0, "Peak");
 
 fig.grid(true);
-fig.axis_pad(0.05);     // 5% padding (MATLABlike)
-fig.legend();           // show in northeast corner
+fig.axis_pad(0.05);
+fig.legend();
 
 fig.title("Demo");
 fig.xlabel("Time [s]");
@@ -51,99 +49,116 @@ fig.save("demo.png");
 
 ---
 
-## Core API (oneliners)
+## Build
 
-| Action | Call |
-|--------|------|
-| Line plot | `plot(x, y, color, thickness, label)` |
-| Scatter   | `scatter(x, y, color, size, label)` |
-| Text      | `text(x, y, msg, color, scale, thick, halign, valign)` |
-| Shapes    | `circle`, `rect_xywh`, `rect_ltrb`, `rotated_rect`, `polygon`, `ellipse` (all accept `ShapeStyle` + `label`) |
-| Grid      | `grid(true/false)` |
-| Tight / padded axes | `axis_tight()`, `axis_pad(frac)` |
-| Equal units | `equal_scale(true)` |
-| Manual limits | `set_xlim(lo,hi)`, `set_ylim(lo,hi)` |
-| Legend     | `legend(on=true, loc="northEast")` |
-| Render / display / save | `render()`, `show("win")`, `save("file.png")` |
+This repository builds:
 
----
+- the `mpocv` static library
+- the `matplotopencv_demo` executable when `MATPLOTOPENCV_BUILD_DEMO=ON`
+- the `doc` target when `MATPLOTOPENCV_BUILD_DOCS=ON`
 
-## Examples
+### Prerequisites
 
-### 1 · Two sine waves + legend
+- CMake 3.16 or newer
+- A C++17 compiler
+- OpenCV 4.5 or newer with `core`, `highgui`, and `imgproc`
+- Doxygen, only if you keep `MATPLOTOPENCV_BUILD_DOCS=ON`
 
-```cpp
-Figure f(800,600);
-f.plot(xs, ys1, Color::Blue(), 2.0f, "sin(t)");
-f.plot(xs, ys2, Color::Cyan(), 2.0f, "0.5·sin(t+0.5)");
-f.scatter({M_PI/2},{1.0}, Color::Red(), 6.0f, "peak");
-f.text(M_PI/2,1.05,"peak");
+### Local OpenCV path
 
-f.grid(true);
-f.axis_tight();
-f.legend();               // default NE
-f.show();
-```
-
-### 2 · Shape test (equalscale)
-
-```cpp
-Figure g(600,600);
-ShapeStyle s{ Color::Black(), 2.0f, Color::Red(), 0.4f };
-g.circle(0,0,1,s,"circle");
-g.rect_xywh(-2,-1,1,2,s,"rect");
-g.rotated_rect(2,1,1,0.5,30,s,"rotrect");
-g.equal_scale(true);
-g.grid(true);
-g.legend(true,"southWest");
-g.show();
-```
-
----
-
-## Dependencies
-- C++17 compiler
-- OpenCV 4.x (core, imgproc, highgui)
-
----
-
-## Build / Integration
-
-The easiest and most reliable way to use MatPlotOpenCV is to **clone it directly** and add it to your own CMake project:
-
-```bash
-git clone https://github.com/mwhannan74/MatPlotOpenCV.git
-```
-
-Then in your own `CMakeLists.txt`:
+The repository uses [`cmake/local_paths.cmake`](./cmake/local_paths.cmake) to define the local OpenCV package location:
 
 ```cmake
-add_subdirectory(MatPlotOpenCV)  # path to the cloned repo
+set(MATPLOTOPENCV_OPENCV_DIR "C:/opencv/build/x64/vc16/lib" CACHE PATH ...)
+```
+
+Update that path if your local OpenCV package is elsewhere. The value must point to the directory that contains `OpenCVConfig.cmake`.
+
+### Step-by-step build
+
+From the repository root:
+
+```bash
+mkdir build && cd build
+cmake ..
+cmake --build . --config Release
+```
+
+### Build documentation
+
+When `MATPLOTOPENCV_BUILD_DOCS=ON`, build the docs target with:
+
+```bash
+cmake --build build --target doc
+```
+
+### Run the demo
+
+```bash
+Release\matplotopencv_demo.exe
+```
+
+### Build options
+
+- `MATPLOTOPENCV_BUILD_DEMO=ON|OFF`
+- `MATPLOTOPENCV_BUILD_DOCS=ON|OFF`
+
+---
+
+## CMake Integration
+
+Clone the repository and consume it through its public target:
+
+```cmake
+add_subdirectory(MatPlotOpenCV)
 
 find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
 
 add_executable(myapp main.cpp)
-target_link_libraries(myapp PRIVATE mpocv ${OpenCV_LIBS})
+target_link_libraries(myapp PRIVATE MatPlotOpenCV::mpocv)
 ```
 
-This gives you:
+Public headers are exposed automatically through the library target.
 
-- Automatic include paths
-- Working compiled `.cpp` source
-- No install step needed
+---
+
+## Repository Layout
+
+```text
+MatPlotOpenCV/
+|-- CMakeLists.txt
+|-- cmake/
+|-- include/
+|-- src/
+|-- demo/
+|-- docs/
+|-- images/
+`-- tests/
+```
+
+`tests/` is currently reserved for future automated tests. The existing visual/manual validation program now lives in `demo/main_demo.cpp`.
+
+The repository intentionally uses a single top-level `CMakeLists.txt`; `demo/` contains source files only. The `build/` directory is generated locally during configuration and build.
+
+---
+
+## Dependencies
+
+- C++17 compiler
+- OpenCV 4.x (`core`, `imgproc`, `highgui`)
+- Doxygen, only when `MATPLOTOPENCV_BUILD_DOCS=ON`
 
 ---
 
 ## Notes & Limits
 
-* OpenCV’s Hershey fonts are basic; for rich text or LaTeX you’ll need a different backend.
-* Vector output (SVG/PDF) and subplots are not yet implemented.
-* Threadsafe as long as each thread owns its own `Figure`.
+- OpenCV's Hershey fonts are basic; for rich text or LaTeX you need a different backend.
+- Vector output (SVG/PDF) and subplots are not yet implemented.
+- Thread-safe as long as each thread owns its own `Figure`.
 
 ---
 
 ## License
 
-This project is licensed under the [BSD 3-Clause License](./LICENSE).  
-You are free to use, modify, and redistribute the code with proper attribution.  
+This project is licensed under the [BSD 3-Clause License](./LICENSE).
 See the LICENSE file for full details.
