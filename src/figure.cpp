@@ -8,6 +8,8 @@
 
 #include "figure.h"
 
+#include <opencv2/core/utils/logger.hpp>
+
 namespace mpocv
 {
 
@@ -21,7 +23,9 @@ namespace mpocv
     Figure::Figure(int w, int h)
         : width_(w), height_(h),
         canvas_(h, w, CV_8UC3, cv::Scalar(255, 255, 255))
-    {}
+    {
+        cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_WARNING);
+    }
 
     void Figure::set_xlim(double lo, double hi)
     {
