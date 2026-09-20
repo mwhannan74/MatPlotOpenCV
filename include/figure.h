@@ -100,6 +100,7 @@ namespace mpocv
           * @param c Line color. Defaults to blue.
           * @param thickness Line thickness in pixels.
           * @param label Optional legend label.
+          * @throws std::invalid_argument If @p x and @p y have different lengths.
           */
         void plot(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -118,6 +119,7 @@ namespace mpocv
          * @param c Line color. Defaults to blue.
          * @param thickness Line thickness in pixels.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If @p x and @p y have different lengths.
          */
         void plot(std::vector<double>&& x,
             std::vector<double>&& y,
@@ -135,6 +137,7 @@ namespace mpocv
          * @param c Marker color. Defaults to red.
          * @param marker_size Size of the markers.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If @p x and @p y have different lengths.
          */
         void scatter(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -152,6 +155,7 @@ namespace mpocv
          * @param c Marker color. Defaults to red.
          * @param marker_size Size of the markers.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If @p x and @p y have different lengths.
          */
         void scatter(std::vector<double>&& x,
             std::vector<double>&& y,

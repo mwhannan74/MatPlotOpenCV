@@ -10,6 +10,8 @@
 
 #include <opencv2/core/utils/logger.hpp>
 
+#include <stdexcept>
+
 namespace mpocv
 {
 
@@ -60,22 +62,34 @@ namespace mpocv
     void Figure::plot(const std::vector<double>& x, const std::vector<double>& y,
         Color c, float thickness, const std::string& label)
     {
+        if (x.size() != y.size())
+            throw std::invalid_argument("plot requires x and y vectors of equal length");
+
         add_line_command(x, y, c, thickness, label);
     }
     void Figure::plot(std::vector<double>&& x, std::vector<double>&& y,
         Color c, float thickness, const std::string& label)
     {
+        if (x.size() != y.size())
+            throw std::invalid_argument("plot requires x and y vectors of equal length");
+
         add_line_command(std::move(x), std::move(y), c, thickness, label);
     }
 
     void Figure::scatter(const std::vector<double>& x, const std::vector<double>& y,
         Color c, float marker_size, const std::string& label)
     {
+        if (x.size() != y.size())
+            throw std::invalid_argument("scatter requires x and y vectors of equal length");
+
         add_scatter_command(x, y, c, marker_size, label);
     }
     void Figure::scatter(std::vector<double>&& x, std::vector<double>&& y,
         Color c, float marker_size, const std::string& label)
     {
+        if (x.size() != y.size())
+            throw std::invalid_argument("scatter requires x and y vectors of equal length");
+
         add_scatter_command(std::move(x), std::move(y), c, marker_size, label);
     }
 

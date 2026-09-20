@@ -62,6 +62,21 @@ if(MATPLOTOPENCV_BUILD_DEMO)
     )
 endif()
 
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    enable_testing()
+
+    add_executable(matplotopencv_tests
+        tests/figure_tests.cpp
+    )
+
+    target_link_libraries(matplotopencv_tests
+        PRIVATE
+            MatPlotOpenCV::mpocv
+    )
+
+    add_test(NAME matplotopencv_tests COMMAND matplotopencv_tests)
+endif()
+
 if(MATPLOTOPENCV_BUILD_DOCS)
     find_package(Doxygen REQUIRED)
 
