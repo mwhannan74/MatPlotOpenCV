@@ -14,15 +14,30 @@ tested as part of this release-readiness work.
 
 ### Two sine waves
 
-![Sine Waves](images/time_plot.jpg)
+<p align="center">
+  <img
+    src="images/time_plot.jpg"
+    alt="Two sine waves plotted with MatPlotOpenCV"
+    width="700">
+</p>
 
 ### 2-D path
 
-![2D](images/2d_plot.jpg)
+<p align="center">
+  <img
+    src="images/2d_plot.jpg"
+    alt="Two-dimensional object path plotted with MatPlotOpenCV"
+    width="700">
+</p>
 
 ### Shapes
 
-![Shapes](images/shapes.jpg)
+<p align="center">
+  <img
+    src="images/shapes.jpg"
+    alt="Shape rendering examples plotted with MatPlotOpenCV"
+    width="700">
+</p>
 
 ## Quick start
 
