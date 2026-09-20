@@ -1,7 +1,11 @@
 #include "figure.h"
 
 #include <opencv2/core/utils/logger.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 
+#include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
@@ -66,6 +70,50 @@ int main()
         {
             figure.scatter(std::vector<double>{ 0.0, 1.0 }, std::vector<double>{ 0.0 });
         });
+
+    const auto check_equal_scale = [&failures](int width, int height,
+        const char* image_path, const char* case_name)
+    {
+        mpocv::Figure equal_scale_figure(width, height);
+        equal_scale_figure.plot({ 0.0, 1.0 }, { 0.0, 0.0 }, mpocv::Color::Blue(), 2.0f);
+        equal_scale_figure.plot({ 0.0, 0.0 }, { 0.0, 1.0 }, mpocv::Color::Red(), 2.0f);
+        equal_scale_figure.equal_scale(true);
+        equal_scale_figure.save(image_path);
+
+        const cv::Mat equal_scale_image = cv::imread(image_path);
+        std::remove(image_path);
+
+        if (equal_scale_image.empty())
+        {
+            std::cerr << "FAIL: " << case_name << " image was not created\n";
+            ++failures;
+            return;
+        }
+
+        cv::Mat blue_mask;
+        cv::Mat red_mask;
+        cv::inRange(equal_scale_image, cv::Scalar(201, 0, 0), cv::Scalar(255, 79, 79), blue_mask);
+        cv::inRange(equal_scale_image, cv::Scalar(0, 0, 201), cv::Scalar(79, 79, 255), red_mask);
+
+        if (cv::countNonZero(blue_mask) == 0 || cv::countNonZero(red_mask) == 0)
+        {
+            std::cerr << "FAIL: " << case_name << " did not contain both test lines\n";
+            ++failures;
+            return;
+        }
+
+        const int horizontal_length = cv::boundingRect(blue_mask).width;
+        const int vertical_length = cv::boundingRect(red_mask).height;
+        if (std::abs(horizontal_length - vertical_length) > 4)
+        {
+            std::cerr << "FAIL: " << case_name << " rendered unequal unit lengths (x="
+                << horizontal_length << ", y=" << vertical_length << ")\n";
+            ++failures;
+        }
+    };
+
+    check_equal_scale(400, 300, "matplotopencv_equal_scale_wide.png", "wide equal-scale figure");
+    check_equal_scale(300, 400, "matplotopencv_equal_scale_tall.png", "tall equal-scale figure");
 
     if (failures != 0)
         return 1;

@@ -221,11 +221,17 @@ namespace mpocv
         {
             const double xrange = axes_.xmax - axes_.xmin;
             const double yrange = axes_.ymax - axes_.ymin;
-            const double span = std::max(xrange, yrange);
+            const double units_per_pixel = std::max(
+                xrange / static_cast<double>(plot_width()),
+                yrange / static_cast<double>(plot_height()));
+            const double adjusted_xrange = units_per_pixel * plot_width();
+            const double adjusted_yrange = units_per_pixel * plot_height();
             const double xmid = 0.5 * (axes_.xmin + axes_.xmax);
             const double ymid = 0.5 * (axes_.ymin + axes_.ymax);
-            axes_.xmin = xmid - span / 2; axes_.xmax = xmid + span / 2;
-            axes_.ymin = ymid - span / 2; axes_.ymax = ymid + span / 2;
+            axes_.xmin = xmid - adjusted_xrange / 2;
+            axes_.xmax = xmid + adjusted_xrange / 2;
+            axes_.ymin = ymid - adjusted_yrange / 2;
+            axes_.ymax = ymid + adjusted_yrange / 2;
         }
         fix_ranges(axes_);
 
