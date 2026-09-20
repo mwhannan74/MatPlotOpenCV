@@ -102,24 +102,19 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
   -DOpenCV_DIR=/path/to/opencv/cmake
 ```
 
-If Doxygen is not installed, disable the documentation target:
-
-```bash
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
-  -DMATPLOTOPENCV_BUILD_DOCS=OFF
-```
-
 ## Build options
 
 - `MATPLOTOPENCV_BUILD_DEMO=ON|OFF`
 - `MATPLOTOPENCV_BUILD_DOCS=ON|OFF`
 
-Both options default to `ON` when building MatPlotOpenCV directly and `OFF`
-when it is included by another CMake project.
+The demo defaults to `ON` when building MatPlotOpenCV directly and `OFF` when
+it is included by another CMake project. Documentation defaults to `OFF` in
+both cases so Doxygen is not required for a normal build.
 
-To generate API documentation:
+To enable and generate API documentation:
 
 ```powershell
+cmake -S . -B build -DMATPLOTOPENCV_BUILD_DOCS=ON
 cmake --build build --config Release --target doc
 ```
 
