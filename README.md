@@ -2,6 +2,11 @@
 
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
+MatPlotOpenCV combines a familiar MATLAB-style plotting interface with explicit,
+application-controlled OpenCV rendering. It makes live 2-D debugging
+visualizations easy to add without bringing a separate graphics engine or
+background rendering system into the application.
+
 MatPlotOpenCV is a small C++17 plotting library built on OpenCV 4. It supports
 lines, scatter plots, text, basic shapes, axes, grids, labels, and legends.
 Figures can be displayed in an OpenCV window or saved as images.
@@ -9,6 +14,52 @@ Figures can be displayed in an OpenCV window or saved as images.
 The project is developed and tested on Windows. Its CMake build also supports
 Linux through standard OpenCV package discovery, but Linux has not yet been
 tested as part of this release-readiness work.
+
+## Why MatPlotOpenCV?
+
+MatPlotOpenCV was created to solve a practical problem in autonomous robotics
+software development: understanding what an algorithm is doing while it is
+running. Logging data for later analysis is useful, but it does not provide live
+feedback and requires additional logging, storage, and post-processing
+infrastructure. Many general-purpose plotting libraries bring their own
+rendering engines, event loops, or background threads, which can interfere with
+timing-sensitive simulation and debugging code.
+
+MatPlotOpenCV takes a deliberately simpler approach. Plotting calls build a
+retained list of drawing instructions; they do not immediately render the
+figure. Rendering occurs only when the application explicitly calls `render()`,
+`show()`, or `save()`. The library does not create its own background rendering
+thread, so the application controls when plotting work occurs and can place it
+at an appropriate point in its processing loop.
+
+The public API is intentionally MATLAB-inspired. Creating a figure, plotting
+data, adding labels or shapes, and displaying or saving the result requires
+only a few direct, readable function calls. Users do not need to construct a
+scene graph, manage a rendering context, configure callbacks, or learn a
+complicated C++ graphics framework. The goal is an interface that is quick to
+learn and convenient to use inside existing robotics and autonomy code.
+
+OpenCV provides the rendering backend. Instead of introducing OpenGL or another
+graphics framework, MatPlotOpenCV draws an ordinary 2-D image using OpenCV image
+processing operations. A figure can be displayed through OpenCV HighGUI or
+written directly to an image file without opening a window. Saved images can
+also be incorporated into an application's existing recording or
+network-streaming workflow.
+
+The library is primarily intended for live visualization during simulation,
+algorithm development, and remote debugging of robotics and autonomy software.
+It may also be used in deployed systems when appropriate, but it is not
+designed as a hard real-time visualization system. Displaying a window requires
+a graphical session, and OpenCV HighGUI may impose UI-thread requirements
+depending on the selected backend. OpenCV builds with Qt support may provide
+additional window controls such as zooming, although those controls are
+provided by OpenCV rather than MatPlotOpenCV.
+
+MatPlotOpenCV is intentionally limited to lightweight 2-D plotting and a
+focused set of plotting primitives. It is not intended to replace MATLAB,
+Matplotlib, or a full scientific-visualization system. Its purpose is to provide
+fast, predictable, application-controlled visualization with minimal
+dependencies and minimal interference with the code being observed.
 
 ## Example plots
 
@@ -88,12 +139,6 @@ Run the demo with:
 .\build\Release\matplotopencv_demo.exe
 ```
 
-Run the automated tests with:
-
-```powershell
-ctest --test-dir build -C Release --output-on-failure
-```
-
 If OpenCV is installed elsewhere, override the cached path without editing the
 project files:
 
@@ -113,12 +158,6 @@ Install OpenCV and make its CMake package discoverable, then run:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ./build/matplotopencv_demo
-```
-
-Run the automated tests with:
-
-```bash
-ctest --test-dir build --output-on-failure
 ```
 
 The Windows-only local path file is not loaded on Linux. If OpenCV is installed
@@ -145,6 +184,30 @@ cmake -S . -B build -DMATPLOTOPENCV_BUILD_DOCS=ON
 cmake --build build --config Release --target doc
 ```
 
+## Testing
+
+The test source in `tests/figure_tests.cpp` builds as the
+`matplotopencv_tests` executable when MatPlotOpenCV is configured as the
+top-level project. It provides regression coverage for input validation,
+OpenCV logging behavior, equal axis scaling, rotated-ellipse bounds, and the
+stability of manually configured axis limits. Some tests create temporary PNG
+files, inspect their rendered pixels, and remove the files before exiting.
+
+After a Release build, run the tests on Windows with:
+
+```powershell
+ctest --test-dir build -C Release --output-on-failure
+```
+
+On Linux, run:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+A successful run reports that all registered tests passed. The
+`--output-on-failure` option displays diagnostic output if a test fails.
+
 ## Repository layout
 
 ```text
@@ -159,8 +222,7 @@ MatPlotOpenCV/
 `-- tests/
 ```
 
-The `matplotopencv_tests` executable provides automated regression coverage.
-The demo remains the manual visual-validation program.
+The demo provides additional manual visual validation.
 
 ## Limitations
 
