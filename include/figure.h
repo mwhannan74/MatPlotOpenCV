@@ -81,6 +81,7 @@ namespace mpocv
          *
          * @param w Canvas width in pixels. Defaults to 640.
          * @param h Canvas height in pixels. Defaults to 480.
+         * @throws std::invalid_argument If the dimensions do not leave a positive plotting area.
          */
         Figure(int w = 640, int h = 480);
 
@@ -101,6 +102,7 @@ namespace mpocv
           * @param thickness Line thickness in pixels.
           * @param label Optional legend label.
           * @throws std::invalid_argument If @p x and @p y have different lengths.
+          * @throws std::invalid_argument If any coordinate is not finite.
           */
         void plot(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -120,6 +122,7 @@ namespace mpocv
          * @param thickness Line thickness in pixels.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
+         * @throws std::invalid_argument If any coordinate is not finite.
          */
         void plot(std::vector<double>&& x,
             std::vector<double>&& y,
@@ -138,6 +141,7 @@ namespace mpocv
          * @param marker_size Size of the markers.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
+         * @throws std::invalid_argument If any coordinate is not finite.
          */
         void scatter(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -156,6 +160,7 @@ namespace mpocv
          * @param marker_size Size of the markers.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
+         * @throws std::invalid_argument If any coordinate is not finite.
          */
         void scatter(std::vector<double>&& x,
             std::vector<double>&& y,
@@ -186,6 +191,7 @@ namespace mpocv
          * @param ha Horizontal alignment.
          * @param va Vertical alignment.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If @p x or @p y is not finite.
          */
         void text(double x, double y, const std::string& msg,
             Color c = Color::Black(),
@@ -205,6 +211,8 @@ namespace mpocv
          * @param radius Radius of the circle.
          * @param style Line and fill styling for the circle.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If the coordinates or radius are not finite,
+         *         or if the radius is not positive.
          */
         void circle(double cx, double cy, double radius,
             const ShapeStyle& style,
@@ -221,6 +229,7 @@ namespace mpocv
          * @param h Rectangle height.
          * @param style Line and fill styling for the rectangle.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If any coordinate or dimension is not finite.
          */
         void rect_xywh(double x, double y, double w, double h,
             const ShapeStyle& style,
@@ -237,6 +246,7 @@ namespace mpocv
          * @param y1 Y-coordinate of the bottom-right or second corner.
          * @param style Line and fill styling for the rectangle.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If any coordinate is not finite.
          */
         void rect_ltrb(double x0, double y0, double x1, double y1,
             const ShapeStyle& style,
@@ -254,6 +264,8 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the rectangle.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If any value is not finite or a dimension
+         *         is not positive.
          */
         void rotated_rect(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
@@ -268,6 +280,7 @@ namespace mpocv
          * @param y Vector of y-coordinates (must match size of @p x).
          * @param style Line and fill styling for the polygon.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If any coordinate is not finite.
          */
         void polygon(const std::vector<double>& x, const std::vector<double>& y,
             const ShapeStyle& style,
@@ -285,6 +298,8 @@ namespace mpocv
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the ellipse.
          * @param label Optional legend label.
+         * @throws std::invalid_argument If any value is not finite or a dimension
+         *         is not positive.
          */
         void ellipse(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
@@ -302,6 +317,7 @@ namespace mpocv
          *
          * @param lo Lower bound for the x-axis.
          * @param hi Upper bound for the x-axis.
+         * @throws std::invalid_argument If either limit is not finite.
          */
         void set_xlim(double lo, double hi);
 
@@ -312,6 +328,7 @@ namespace mpocv
          *
          * @param lo Lower bound for the y-axis.
          * @param hi Upper bound for the y-axis.
+         * @throws std::invalid_argument If either limit is not finite.
          */
         void set_ylim(double lo, double hi);
 

@@ -8,7 +8,18 @@
 
 #include "figure.h"
 
+#include <algorithm>
 #include <stdexcept>
+
+namespace
+{
+    bool coordinates_are_finite(const std::vector<double>& x, const std::vector<double>& y)
+    {
+        const auto is_finite = [](double value) { return std::isfinite(value); };
+        return std::all_of(x.begin(), x.end(), is_finite) &&
+            std::all_of(y.begin(), y.end(), is_finite);
+    }
+}
 
 namespace mpocv
 {
@@ -21,17 +32,26 @@ namespace mpocv
      // Construction & basic settings
      // ---------------------------------------------------------------------------
     Figure::Figure(int w, int h)
-        : width_(w), height_(h),
-        canvas_(h, w, CV_8UC3, cv::Scalar(255, 255, 255))
+        : width_(w), height_(h)
     {
+        if (w <= kMarginLeft + kMarginRight || h <= kMarginTop + kMarginBottom)
+            throw std::invalid_argument("Figure dimensions must leave a positive plotting area");
+
+        canvas_ = cv::Mat(h, w, CV_8UC3, cv::Scalar(255, 255, 255));
     }
 
     void Figure::set_xlim(double lo, double hi)
     {
+        if (!std::isfinite(lo) || !std::isfinite(hi))
+            throw std::invalid_argument("x-axis limits must be finite");
+
         axes_.xmin = lo; axes_.xmax = hi; axes_.autoscale = false; dirty_ = true;
     }
     void Figure::set_ylim(double lo, double hi)
     {
+        if (!std::isfinite(lo) || !std::isfinite(hi))
+            throw std::invalid_argument("y-axis limits must be finite");
+
         axes_.ymin = lo; axes_.ymax = hi; axes_.autoscale = false; dirty_ = true;
     }
     void Figure::axis_tight()
@@ -61,6 +81,8 @@ namespace mpocv
     {
         if (x.size() != y.size())
             throw std::invalid_argument("plot requires x and y vectors of equal length");
+        if (!coordinates_are_finite(x, y))
+            throw std::invalid_argument("plot coordinates must be finite");
 
         add_line_command(x, y, c, thickness, label);
     }
@@ -69,6 +91,8 @@ namespace mpocv
     {
         if (x.size() != y.size())
             throw std::invalid_argument("plot requires x and y vectors of equal length");
+        if (!coordinates_are_finite(x, y))
+            throw std::invalid_argument("plot coordinates must be finite");
 
         add_line_command(std::move(x), std::move(y), c, thickness, label);
     }
@@ -78,6 +102,8 @@ namespace mpocv
     {
         if (x.size() != y.size())
             throw std::invalid_argument("scatter requires x and y vectors of equal length");
+        if (!coordinates_are_finite(x, y))
+            throw std::invalid_argument("scatter coordinates must be finite");
 
         add_scatter_command(x, y, c, marker_size, label);
     }
@@ -86,6 +112,8 @@ namespace mpocv
     {
         if (x.size() != y.size())
             throw std::invalid_argument("scatter requires x and y vectors of equal length");
+        if (!coordinates_are_finite(x, y))
+            throw std::invalid_argument("scatter coordinates must be finite");
 
         add_scatter_command(std::move(x), std::move(y), c, marker_size, label);
     }
@@ -95,6 +123,9 @@ namespace mpocv
         TextData::HAlign ha, TextData::VAlign va,
         const std::string& label)
     {
+        if (!std::isfinite(x) || !std::isfinite(y))
+            throw std::invalid_argument("text coordinates must be finite");
+
         PlotCommand cmd;
         cmd.type = CmdType::Text;
         cmd.color = c;
@@ -107,6 +138,10 @@ namespace mpocv
     void Figure::circle(double cx, double cy, double radius,
         const ShapeStyle& style, const std::string& label)
     {
+        if (!std::isfinite(cx) || !std::isfinite(cy) ||
+            !std::isfinite(radius) || radius <= 0.0)
+            throw std::invalid_argument("circle coordinates and radius must be finite with a positive radius");
+
         PlotCommand cmd;
         cmd.type = CmdType::Circle;
         cmd.circle = { cx, cy, radius, style };
@@ -120,6 +155,10 @@ namespace mpocv
     void Figure::rect_xywh(double x, double y, double w, double h,
         const ShapeStyle& style, const std::string& label)
     {
+        if (!std::isfinite(x) || !std::isfinite(y) ||
+            !std::isfinite(w) || !std::isfinite(h))
+            throw std::invalid_argument("rectangle coordinates and dimensions must be finite");
+
         PlotCommand cmd;
         cmd.type = CmdType::RectXYWH;
         cmd.rect = { x, y, x + w, y + h, style };
@@ -133,6 +172,10 @@ namespace mpocv
     void Figure::rect_ltrb(double x0, double y0, double x1, double y1,
         const ShapeStyle& style, const std::string& label)
     {
+        if (!std::isfinite(x0) || !std::isfinite(y0) ||
+            !std::isfinite(x1) || !std::isfinite(y1))
+            throw std::invalid_argument("rectangle coordinates must be finite");
+
         PlotCommand cmd;
         cmd.type = CmdType::RectLTRB;
         cmd.rect = { x0, y0, x1, y1, style };
@@ -146,6 +189,11 @@ namespace mpocv
     void Figure::rotated_rect(double cx, double cy, double w, double h, double angle_deg,
         const ShapeStyle& style, const std::string& label)
     {
+        if (!std::isfinite(cx) || !std::isfinite(cy) ||
+            !std::isfinite(w) || !std::isfinite(h) || !std::isfinite(angle_deg) ||
+            w <= 0.0 || h <= 0.0)
+            throw std::invalid_argument("rotated rectangle values must be finite with positive dimensions");
+
         PlotCommand cmd;
         cmd.type = CmdType::RotatedRect;
         cmd.rot_rect = { cx, cy, w, h, angle_deg, style };
@@ -162,6 +210,8 @@ namespace mpocv
         const ShapeStyle& style, const std::string& label)
     {
         if (x.size() != y.size() || x.empty()) return;
+        if (!coordinates_are_finite(x, y))
+            throw std::invalid_argument("polygon coordinates must be finite");
 
         PlotCommand cmd;
         cmd.type = CmdType::Polygon;
@@ -178,6 +228,11 @@ namespace mpocv
     void Figure::ellipse(double cx, double cy, double w, double h, double angle_deg,
         const ShapeStyle& style, const std::string& label)
     {
+        if (!std::isfinite(cx) || !std::isfinite(cy) ||
+            !std::isfinite(w) || !std::isfinite(h) || !std::isfinite(angle_deg) ||
+            w <= 0.0 || h <= 0.0)
+            throw std::invalid_argument("ellipse values must be finite with positive dimensions");
+
         PlotCommand cmd;
         cmd.type = CmdType::Ellipse;
         cmd.ellipse = { cx, cy, w, h, angle_deg, style };

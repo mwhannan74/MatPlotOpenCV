@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 #include <vector>
 
@@ -53,6 +54,26 @@ int main()
 
     const std::vector<double> one_value{ 0.0 };
     const std::vector<double> two_values{ 0.0, 1.0 };
+    const double infinity = std::numeric_limits<double>::infinity();
+    const double nan = std::numeric_limits<double>::quiet_NaN();
+    const mpocv::ShapeStyle default_style;
+
+    expect_invalid_argument("figure width", []
+        {
+            mpocv::Figure invalid_figure(80, 300);
+        });
+    expect_invalid_argument("figure height", []
+        {
+            mpocv::Figure invalid_figure(400, 100);
+        });
+    expect_invalid_argument("non-finite x-axis limit", [&]
+        {
+            figure.set_xlim(0.0, infinity);
+        });
+    expect_invalid_argument("non-finite y-axis limit", [&]
+        {
+            figure.set_ylim(nan, 1.0);
+        });
 
     expect_invalid_argument("plot lvalue overload", [&]
         {
@@ -69,6 +90,42 @@ int main()
     expect_invalid_argument("scatter rvalue overload", [&]
         {
             figure.scatter(std::vector<double>{ 0.0, 1.0 }, std::vector<double>{ 0.0 });
+        });
+    expect_invalid_argument("non-finite plot coordinate", [&]
+        {
+            figure.plot(std::vector<double>{ 0.0, infinity }, std::vector<double>{ 0.0, 1.0 });
+        });
+    expect_invalid_argument("non-finite scatter coordinate", [&]
+        {
+            figure.scatter(std::vector<double>{ 0.0, 1.0 }, std::vector<double>{ 0.0, nan });
+        });
+    expect_invalid_argument("non-finite text coordinate", [&]
+        {
+            figure.text(infinity, 0.0, "invalid");
+        });
+    expect_invalid_argument("non-positive circle radius", [&]
+        {
+            figure.circle(0.0, 0.0, 0.0, default_style);
+        });
+    expect_invalid_argument("non-finite rectangle value", [&]
+        {
+            figure.rect_xywh(0.0, 0.0, infinity, 1.0, default_style);
+        });
+    expect_invalid_argument("non-finite rectangle corner", [&]
+        {
+            figure.rect_ltrb(0.0, nan, 1.0, 1.0, default_style);
+        });
+    expect_invalid_argument("non-positive rotated rectangle dimension", [&]
+        {
+            figure.rotated_rect(0.0, 0.0, -1.0, 1.0, 0.0, default_style);
+        });
+    expect_invalid_argument("non-finite polygon coordinate", [&]
+        {
+            figure.polygon({ 0.0, 1.0, infinity }, { 0.0, 1.0, 0.0 }, default_style);
+        });
+    expect_invalid_argument("non-positive ellipse dimension", [&]
+        {
+            figure.ellipse(0.0, 0.0, 1.0, 0.0, 0.0, default_style);
         });
 
     const auto check_equal_scale = [&failures](int width, int height,
