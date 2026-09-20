@@ -219,7 +219,7 @@ namespace mpocv
         }
 
         /* 1b) optional padding -------------------------------------------------- */
-        if (axes_.pad_frac > 0.0)
+        if (axes_.autoscale && axes_.pad_frac > 0.0)
         {
             const double dx = (axes_.xmax - axes_.xmin) * axes_.pad_frac;
             const double dy = (axes_.ymax - axes_.ymin) * axes_.pad_frac;

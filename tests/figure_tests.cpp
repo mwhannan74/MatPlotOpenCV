@@ -160,6 +160,48 @@ int main()
     check_ellipse_bounds(45.0, "matplotopencv_ellipse_45.png", "45-degree ellipse");
     check_ellipse_bounds(90.0, "matplotopencv_ellipse_90.png", "90-degree ellipse");
 
+    mpocv::Figure manual_limits_figure(400, 300);
+    manual_limits_figure.set_xlim(0.0, 10.0);
+    manual_limits_figure.set_ylim(0.0, 10.0);
+    manual_limits_figure.axis_pad(0.1);
+    manual_limits_figure.plot({ 2.0, 8.0 }, { 5.0, 5.0 }, mpocv::Color::Blue(), 2.0f);
+
+    const auto save_blue_bounds = [&failures, &manual_limits_figure](const char* image_path)
+    {
+        manual_limits_figure.save(image_path);
+        const cv::Mat image = cv::imread(image_path);
+        std::remove(image_path);
+
+        if (image.empty())
+        {
+            std::cerr << "FAIL: manual-limits test image was not created\n";
+            ++failures;
+            return cv::Rect{};
+        }
+
+        cv::Mat blue_mask;
+        cv::inRange(image, cv::Scalar(201, 0, 0), cv::Scalar(255, 79, 79), blue_mask);
+        if (cv::countNonZero(blue_mask) == 0)
+        {
+            std::cerr << "FAIL: manual-limits test image did not contain the line\n";
+            ++failures;
+            return cv::Rect{};
+        }
+        return cv::boundingRect(blue_mask);
+    };
+
+    const cv::Rect bounds_before_redraw =
+        save_blue_bounds("matplotopencv_manual_limits_before.png");
+    manual_limits_figure.title("Redraw");
+    const cv::Rect bounds_after_redraw =
+        save_blue_bounds("matplotopencv_manual_limits_after.png");
+
+    if (bounds_before_redraw != bounds_after_redraw)
+    {
+        std::cerr << "FAIL: manual axis limits changed across renders\n";
+        ++failures;
+    }
+
     if (failures != 0)
         return 1;
 
