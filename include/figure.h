@@ -67,9 +67,9 @@ namespace mpocv
      *   - an Axes object describing the data coordinate system
      *   - a vector of PlotCommand structs
      *
-     * Thread safety: concurrent access to a single Figure must be guarded by
-     * the caller. Separate Figure instances can be used from different threads
-     * without locking.
+     * Thread safety: concurrent access to a Figure must be guarded by the
+     * caller. OpenCV HighGUI may also require show() to run on the application's
+     * UI thread, depending on the active backend.
      */
     class Figure
     {
@@ -99,6 +99,7 @@ namespace mpocv
           * @param y Vector of y data values (must be the same length as @p x).
           * @param c Line color. Defaults to blue.
           * @param thickness Line thickness in pixels.
+          * @param label Optional legend label.
           */
         void plot(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -116,6 +117,7 @@ namespace mpocv
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Line color. Defaults to blue.
          * @param thickness Line thickness in pixels.
+         * @param label Optional legend label.
          */
         void plot(std::vector<double>&& x,
             std::vector<double>&& y,
@@ -132,6 +134,7 @@ namespace mpocv
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Marker color. Defaults to red.
          * @param marker_size Size of the markers.
+         * @param label Optional legend label.
          */
         void scatter(const std::vector<double>& x,
             const std::vector<double>& y,
@@ -148,6 +151,7 @@ namespace mpocv
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Marker color. Defaults to red.
          * @param marker_size Size of the markers.
+         * @param label Optional legend label.
          */
         void scatter(std::vector<double>&& x,
             std::vector<double>&& y,
@@ -177,6 +181,7 @@ namespace mpocv
          * @param thickness Thickness of the text.
          * @param ha Horizontal alignment.
          * @param va Vertical alignment.
+         * @param label Optional legend label.
          */
         void text(double x, double y, const std::string& msg,
             Color c = Color::Black(),
@@ -195,6 +200,7 @@ namespace mpocv
          * @param cy Y-coordinate of the circle center.
          * @param radius Radius of the circle.
          * @param style Line and fill styling for the circle.
+         * @param label Optional legend label.
          */
         void circle(double cx, double cy, double radius,
             const ShapeStyle& style,
@@ -210,6 +216,7 @@ namespace mpocv
          * @param w Rectangle width.
          * @param h Rectangle height.
          * @param style Line and fill styling for the rectangle.
+         * @param label Optional legend label.
          */
         void rect_xywh(double x, double y, double w, double h,
             const ShapeStyle& style,
@@ -225,6 +232,7 @@ namespace mpocv
          * @param x1 X-coordinate of the bottom-right or second corner.
          * @param y1 Y-coordinate of the bottom-right or second corner.
          * @param style Line and fill styling for the rectangle.
+         * @param label Optional legend label.
          */
         void rect_ltrb(double x0, double y0, double x1, double y1,
             const ShapeStyle& style,
@@ -241,6 +249,7 @@ namespace mpocv
          * @param h Height of the rectangle (vertical side length).
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the rectangle.
+         * @param label Optional legend label.
          */
         void rotated_rect(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
@@ -254,6 +263,7 @@ namespace mpocv
          * @param x Vector of x-coordinates.
          * @param y Vector of y-coordinates (must match size of @p x).
          * @param style Line and fill styling for the polygon.
+         * @param label Optional legend label.
          */
         void polygon(const std::vector<double>& x, const std::vector<double>& y,
             const ShapeStyle& style,
@@ -266,10 +276,11 @@ namespace mpocv
          *
          * @param cx X-coordinate of the ellipse center.
          * @param cy Y-coordinate of the ellipse center.
-         * @param w Width of the full ellipse (major axis).
-         * @param h Height of the full ellipse (minor axis).
+         * @param w Full width of the unrotated ellipse.
+         * @param h Full height of the unrotated ellipse.
          * @param angle_deg Rotation angle in degrees (counter-clockwise).
          * @param style Line and fill styling for the ellipse.
+         * @param label Optional legend label.
          */
         void ellipse(double cx, double cy, double w, double h, double angle_deg,
             const ShapeStyle& style,
@@ -318,11 +329,11 @@ namespace mpocv
          * will be expanded on each side by the given fraction of the data range.
          * For example, a fraction of 0.05 means 5% extra space on each boundary.
          *
-         * @param frac Padding fraction in [0.0, 1.0]. A value of 0.0 means no extra
-         *             padding (tight), while 0.1 would add 10% padding, etc.
+         * @param frac Nonnegative padding fraction. A value of 0.0 means no extra
+         *             padding (tight), while 0.1 adds 10% padding on each side.
          *
          * @note Values below 0.0 are clamped to 0.0. Any change here takes effect
-         *       on the next render() or show().
+         *       on the next render(), show(), or save().
          */
         void axis_pad(double frac);
 
