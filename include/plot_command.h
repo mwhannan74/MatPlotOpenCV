@@ -74,9 +74,9 @@ namespace mpocv
     struct ShapeStyle
     {
         Color line_color{ Color::Black() };  ///< Stroke color
-        float thickness{ 1.0f };             ///< Stroke thickness in pixels
+        float thickness{ 1.0f };             ///< Stroke thickness in pixels; values above zero draw an outline
         Color fill_color{ 255, 255, 255 };   ///< Fill color (RGB)
-        float fill_alpha{ 1.0f };            ///< Fill alpha (0 = transparent, 1 = opaque)
+        float fill_alpha{ 1.0f };            ///< Fill alpha (0 = transparent, 1 = opaque); callers should keep it in [0, 1]
     };
 
     /**

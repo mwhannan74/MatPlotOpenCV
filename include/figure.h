@@ -99,7 +99,8 @@ namespace mpocv
           * @param x Vector of x data values.
           * @param y Vector of y data values (must be the same length as @p x).
           * @param c Line color. Defaults to blue.
-          * @param thickness Line thickness in pixels.
+          * @param thickness Positive line thickness in pixels. Invalid values are
+          *        not currently validated before rendering.
           * @param label Optional legend label.
           * @throws std::invalid_argument If @p x and @p y have different lengths.
           * @throws std::invalid_argument If any coordinate is not finite.
@@ -119,7 +120,8 @@ namespace mpocv
          * @param x Vector of x data values.
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Line color. Defaults to blue.
-         * @param thickness Line thickness in pixels.
+         * @param thickness Positive line thickness in pixels. Invalid values are
+         *        not currently validated before rendering.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
          * @throws std::invalid_argument If any coordinate is not finite.
@@ -138,7 +140,8 @@ namespace mpocv
          * @param x Vector of x data values.
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Marker color. Defaults to red.
-         * @param marker_size Size of the markers.
+         * @param marker_size Positive marker radius in pixels. Invalid values are
+         *        not currently validated before rendering.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
          * @throws std::invalid_argument If any coordinate is not finite.
@@ -157,7 +160,8 @@ namespace mpocv
          * @param x Vector of x data values.
          * @param y Vector of y data values (must be the same length as @p x).
          * @param c Marker color. Defaults to red.
-         * @param marker_size Size of the markers.
+         * @param marker_size Positive marker radius in pixels. Invalid values are
+         *        not currently validated before rendering.
          * @param label Optional legend label.
          * @throws std::invalid_argument If @p x and @p y have different lengths.
          * @throws std::invalid_argument If any coordinate is not finite.
@@ -186,8 +190,10 @@ namespace mpocv
          * @param y Data y coordinate.
          * @param msg Text message to display.
          * @param c Text color. Defaults to black.
-         * @param font_scale Scale factor for the text font.
-         * @param thickness Thickness of the text.
+         * @param font_scale Positive scale factor for the text font. Invalid values
+         *        are not currently validated before rendering.
+         * @param thickness Positive thickness of the text. Invalid values are not
+         *        currently validated before rendering.
          * @param ha Horizontal alignment.
          * @param va Vertical alignment.
          * @param label Optional legend label.
@@ -281,6 +287,7 @@ namespace mpocv
          * @param style Line and fill styling for the polygon.
          * @param label Optional legend label.
          * @throws std::invalid_argument If any coordinate is not finite.
+         * @note Empty or mismatched coordinate vectors are currently ignored.
          */
         void polygon(const std::vector<double>& x, const std::vector<double>& y,
             const ShapeStyle& style,

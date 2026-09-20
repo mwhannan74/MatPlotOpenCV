@@ -73,6 +73,12 @@ Run the demo with:
 .\build\Release\matplotopencv_demo.exe
 ```
 
+Run the automated tests with:
+
+```powershell
+ctest --test-dir build -C Release --output-on-failure
+```
+
 If OpenCV is installed elsewhere, override the cached path without editing the
 project files:
 
@@ -92,6 +98,12 @@ Install OpenCV and make its CMake package discoverable, then run:
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ./build/matplotopencv_demo
+```
+
+Run the automated tests with:
+
+```bash
+ctest --test-dir build --output-on-failure
 ```
 
 The Windows-only local path file is not loaded on Linux. If OpenCV is installed
@@ -128,11 +140,12 @@ MatPlotOpenCV/
 |-- docs/
 |-- images/
 |-- include/
-`-- src/
+|-- src/
+`-- tests/
 ```
 
-The demo is currently the manual validation program. Automated MatPlotOpenCV
-tests will be introduced during the stabilization work.
+The `matplotopencv_tests` executable provides automated regression coverage.
+The demo remains the manual visual-validation program.
 
 ## Limitations
 
@@ -141,8 +154,20 @@ tests will be introduced during the stabilization work.
   implemented by this library.
 - Concurrent access to one `Figure` is not safe. HighGUI may also require calls
   from the application's UI thread, depending on the OpenCV backend.
-- Coordinate vectors passed to `plot()`, `scatter()`, and `polygon()` must have
-  matching lengths.
+- Coordinate vectors passed to `plot()` and `scatter()` must have matching
+  lengths; mismatched vectors throw `std::invalid_argument`. `polygon()`
+  currently ignores empty or mismatched coordinate vectors.
+- Circles, rotated rectangles, and rotated ellipses represent their documented
+  data-space geometry accurately when equal scaling is enabled. With unequal
+  x- and y-axis scales, their screen-space rendering is not an exact affine
+  transform of the data-space shape.
+- Legend swatches for labeled shapes currently use the default command color
+  instead of the shape's configured line or fill color.
+- Tick labels use one decimal place for intervals below one, so very small
+  ranges can display repeated labels.
+- Line thickness, marker size, text scale, text thickness, and `ShapeStyle`
+  numeric values are not fully validated before being passed to OpenCV. Use
+  positive, finite sizes and scales, and keep fill alpha in the range `[0, 1]`.
 
 ## License
 
