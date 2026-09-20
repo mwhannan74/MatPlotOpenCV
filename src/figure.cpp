@@ -182,8 +182,20 @@ namespace mpocv
         cmd.type = CmdType::Ellipse;
         cmd.ellipse = { cx, cy, w, h, angle_deg, style };
         cmd.label = label;
-        data_bounds_.expand(cx - 0.5 * w, cy - 0.5 * h);
-        data_bounds_.expand(cx + 0.5 * w, cy + 0.5 * h);
+
+        const double angle_rad = angle_deg * std::acos(-1.0) / 180.0;
+        const double cos_angle = std::cos(angle_rad);
+        const double sin_angle = std::sin(angle_rad);
+        const double half_width = 0.5 * w;
+        const double half_height = 0.5 * h;
+        const double x_extent = std::sqrt(
+            half_width * half_width * cos_angle * cos_angle +
+            half_height * half_height * sin_angle * sin_angle);
+        const double y_extent = std::sqrt(
+            half_width * half_width * sin_angle * sin_angle +
+            half_height * half_height * cos_angle * cos_angle);
+        data_bounds_.expand(cx - x_extent, cy - y_extent);
+        data_bounds_.expand(cx + x_extent, cy + y_extent);
         cmds_.push_back(std::move(cmd));
         dirty_ = true;
     }

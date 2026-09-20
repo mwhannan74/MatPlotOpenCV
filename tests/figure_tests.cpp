@@ -115,6 +115,51 @@ int main()
     check_equal_scale(400, 300, "matplotopencv_equal_scale_wide.png", "wide equal-scale figure");
     check_equal_scale(300, 400, "matplotopencv_equal_scale_tall.png", "tall equal-scale figure");
 
+    const auto check_ellipse_bounds = [&failures](double angle_degrees,
+        const char* image_path, const char* case_name)
+    {
+        mpocv::ShapeStyle style;
+        style.line_color = mpocv::Color::Blue();
+        style.thickness = 2.0f;
+        style.fill_alpha = 0.0f;
+
+        mpocv::Figure ellipse_figure(400, 300);
+        ellipse_figure.ellipse(0.0, 0.0, 4.0, 1.0, angle_degrees, style);
+        ellipse_figure.equal_scale(true);
+        ellipse_figure.save(image_path);
+
+        const cv::Mat ellipse_image = cv::imread(image_path);
+        std::remove(image_path);
+
+        if (ellipse_image.empty())
+        {
+            std::cerr << "FAIL: " << case_name << " image was not created\n";
+            ++failures;
+            return;
+        }
+
+        cv::Mat blue_mask;
+        cv::inRange(ellipse_image, cv::Scalar(201, 0, 0), cv::Scalar(255, 79, 79), blue_mask);
+        if (cv::countNonZero(blue_mask) == 0)
+        {
+            std::cerr << "FAIL: " << case_name << " did not contain the ellipse\n";
+            ++failures;
+            return;
+        }
+
+        const cv::Rect bounds = cv::boundingRect(blue_mask);
+        const cv::Rect plot_area(60, 40, 320, 200);
+        if ((bounds & plot_area) != bounds)
+        {
+            std::cerr << "FAIL: " << case_name << " extended outside the plot area\n";
+            ++failures;
+        }
+    };
+
+    check_ellipse_bounds(0.0, "matplotopencv_ellipse_0.png", "0-degree ellipse");
+    check_ellipse_bounds(45.0, "matplotopencv_ellipse_45.png", "45-degree ellipse");
+    check_ellipse_bounds(90.0, "matplotopencv_ellipse_90.png", "90-degree ellipse");
+
     if (failures != 0)
         return 1;
 
