@@ -17,49 +17,21 @@ tested as part of this release-readiness work.
 
 ## Why MatPlotOpenCV?
 
-MatPlotOpenCV was created to solve a practical problem in autonomous robotics
-software development: understanding what an algorithm is doing while it is
-running. Logging data for later analysis is useful, but it does not provide live
-feedback and requires additional logging, storage, and post-processing
-infrastructure. Many general-purpose plotting libraries bring their own
-rendering engines, event loops, or background threads, which can interfere with
-timing-sensitive simulation and debugging code.
+MatPlotOpenCV was created to solve a practical problem in autonomous robotics development: understanding what an algorithm is doing while it is running. Logging data for later analysis is valuable, but it does not provide live feedback and requires additional infrastructure for logging, storage, and post-processing. Many general-purpose plotting libraries also introduce rendering engines, event loops, or background threads that can interfere with timing-sensitive simulation and debugging code.
 
-MatPlotOpenCV takes a deliberately simpler approach. Plotting calls build a
-retained list of drawing instructions; they do not immediately render the
-figure. Rendering occurs only when the application explicitly calls `render()`,
-`show()`, or `save()`. The library does not create its own background rendering
-thread, so the application controls when plotting work occurs and can place it
-at an appropriate point in its processing loop.
+MatPlotOpenCV takes a deliberately simpler approach. Plotting calls build a retained list of drawing instructions without immediately rendering the figure. Rendering occurs only when the application explicitly calls `render()`, `show()`, or `save()`. The library does not create its own background rendering thread, allowing the application to control when plotting work occurs and place it at an appropriate point in its processing loop.
 
-The public API is intentionally MATLAB-inspired. Creating a figure, plotting
-data, adding labels or shapes, and displaying or saving the result requires
-only a few direct, readable function calls. Users do not need to construct a
-scene graph, manage a rendering context, configure callbacks, or learn a
-complicated C++ graphics framework. The goal is an interface that is quick to
-learn and convenient to use inside existing robotics and autonomy code.
+The public API is intentionally MATLAB-inspired. Creating a figure, plotting data, adding labels or shapes, and displaying or saving the result requires only a few direct, readable function calls. Users do not need to construct a scene graph, manage a rendering context, configure callbacks, or learn a complicated C++ graphics framework.
 
-OpenCV provides the rendering backend. Instead of introducing OpenGL or another
-graphics framework, MatPlotOpenCV draws an ordinary 2-D image using OpenCV image
-processing operations. A figure can be displayed through OpenCV HighGUI or
-written directly to an image file without opening a window. Saved images can
-also be incorporated into an application's existing recording or
-network-streaming workflow.
+Application code also does not need to construct or pass OpenCV types through the plotting interface. Plot data is supplied using standard C++ types such as `std::vector`, `std::string`, and numeric values, along with small supporting types provided by MatPlotOpenCV, such as `Color` and `ShapeStyle`. OpenCV image buffers, drawing operations, and coordinate conversions remain implementation details.
 
-The library is primarily intended for live visualization during simulation,
-algorithm development, and remote debugging of robotics and autonomy software.
-It may also be used in deployed systems when appropriate, but it is not
-designed as a hard real-time visualization system. Displaying a window requires
-a graphical session, and OpenCV HighGUI may impose UI-thread requirements
-depending on the selected backend. OpenCV builds with Qt support may provide
-additional window controls such as zooming, although those controls are
-provided by OpenCV rather than MatPlotOpenCV.
+This separation allows visualization to be added directly to algorithm and simulation code without first translating application data into `cv::Mat`, `cv::Point`, `cv::Scalar`, or other rendering-specific structures. Developers can work with the same vectors and numeric values already produced by their algorithms, keeping debugging code short and readable. OpenCV remains a required dependency, but its drawing API does not need to spread throughout the application.
 
-MatPlotOpenCV is intentionally limited to lightweight 2-D plotting and a
-focused set of plotting primitives. It is not intended to replace MATLAB,
-Matplotlib, or a full scientific-visualization system. Its purpose is to provide
-fast, predictable, application-controlled visualization with minimal
-dependencies and minimal interference with the code being observed.
+OpenCV provides the rendering backend. Instead of introducing OpenGL or another graphics framework, MatPlotOpenCV draws an ordinary 2-D image using OpenCV image-processing operations. A figure can be displayed through OpenCV HighGUI or written directly to an image file without opening a window. Saved images can also be incorporated into an application’s existing recording or network-streaming workflow.
+
+The library is primarily intended for live visualization during simulation, algorithm development, and remote debugging of robotics and autonomy software. It may also be used in deployed systems when appropriate, but it is not designed as a hard real-time visualization system. Displaying a window requires a graphical session, and OpenCV HighGUI may impose UI-thread requirements depending on the selected backend. OpenCV builds with Qt support may provide additional window controls such as zooming, although those controls are provided by OpenCV rather than MatPlotOpenCV.
+
+MatPlotOpenCV is intentionally limited to lightweight 2-D plotting and a focused set of plotting primitives. It is not intended to replace MATLAB, Matplotlib, or a full scientific-visualization system. Its purpose is to provide fast, application-controlled visualization with minimal dependencies and minimal interference with the code being observed.
 
 ## Example plots
 
