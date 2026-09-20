@@ -2,163 +2,153 @@
 
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-Minimal 2D plotting library using OpenCV.
+MatPlotOpenCV is a small C++17 plotting library built on OpenCV 4. It supports
+lines, scatter plots, text, basic shapes, axes, grids, labels, and legends.
+Figures can be displayed in an OpenCV window or saved as images.
 
-MatPlotOpenCV is a lightweight C++17 plotting library that offers a MATLAB / matplotlib-style API for basic 2-D graphics: lines, scatter, text, and simple shapes, without pulling in a full GUI or OpenGL backend. It uses OpenCV 4.x as the rendering surface, so figures are drawn directly into a `cv::Mat` and displayed with `cv::imshow`.
+The project is developed and tested on Windows. Its CMake build also supports
+Linux through standard OpenCV package discovery, but Linux has not yet been
+tested as part of this release-readiness work.
 
-The library is implemented as a compiled target with public headers in `include/` and implementation in `src/`. The repository also includes an optional consumer-style demo under `demo/`.
-
----
-
-## Example Plots
+## Example plots
 
 ### Two sine waves
+
 ![Sine Waves](images/time_plot.jpg)
 
-### 2D Plot
+### 2-D path
+
 ![2D](images/2d_plot.jpg)
 
 ### Shapes
+
 ![Shapes](images/shapes.jpg)
 
----
-
-## Quick Start
+## Quick start
 
 ```cpp
 #include "figure.h"
+
 using namespace mpocv;
 
-Figure fig(640, 480);
-
-fig.plot(x, y, Color::Blue(), 2.0f, "signal");
-fig.scatter(px, py, Color::Red(), 5.0f, "events");
-fig.text(3.14, 1.0, "Peak");
-
-fig.grid(true);
-fig.axis_pad(0.05);
-fig.legend();
-
-fig.title("Demo");
-fig.xlabel("Time [s]");
-fig.ylabel("Amplitude");
-
-fig.show();
-fig.save("demo.png");
+Figure figure(640, 480);
+figure.plot(x, y, Color::Blue(), 2.0f, "signal");
+figure.scatter(px, py, Color::Red(), 5.0f, "events");
+figure.text(3.14, 1.0, "Peak");
+figure.grid(true);
+figure.legend();
+figure.title("Demo");
+figure.xlabel("Time [s]");
+figure.ylabel("Amplitude");
+figure.save("demo.png");
+figure.show();
 ```
 
----
-
-## Build
-
-This repository builds:
-
-- the `mpocv` static library
-- the `matplotopencv_demo` executable when `MATPLOTOPENCV_BUILD_DEMO=ON`
-- the `doc` target when `MATPLOTOPENCV_BUILD_DOCS=ON`
-
-### Prerequisites
+## Requirements
 
 - CMake 3.16 or newer
 - A C++17 compiler
-- OpenCV 4.5 or newer with `core`, `highgui`, and `imgproc`
-- Doxygen, only if you keep `MATPLOTOPENCV_BUILD_DOCS=ON`
+- OpenCV 4.5 or newer with `core`, `highgui`, `imgproc`, and `imgcodecs`
+- Doxygen when building the optional API documentation target
 
-### Local OpenCV path
+## Build on Windows
 
-The repository uses [`cmake/local_paths.cmake`](./cmake/local_paths.cmake) to define the local OpenCV package location:
+The default Windows OpenCV location is configured in
+`cmake\local_paths.cmake`. It currently expects:
 
-```cmake
-set(MATPLOTOPENCV_OPENCV_DIR "C:/opencv/build/x64/vc16/lib" CACHE PATH ...)
+```text
+C:\opencv\build\x64\vc16\lib
 ```
 
-Update that path if your local OpenCV package is elsewhere. The value must point to the directory that contains `OpenCVConfig.cmake`.
+From PowerShell in the repository root:
 
-### Step-by-step build
+```powershell
+cmake -S . -B build
+cmake --build build --config Release
+```
 
-From the repository root:
+Run the demo with:
+
+```powershell
+.\build\Release\matplotopencv_demo.exe
+```
+
+If OpenCV is installed elsewhere, override the cached path without editing the
+project files:
+
+```powershell
+cmake -S . -B build -DMATPLOTOPENCV_OPENCV_DIR="C:/path/to/opencv/cmake"
+```
+
+The value must name the directory containing `OpenCVConfig.cmake`. Forward
+slashes are intentional in CMake values; Windows path separators are used for
+PowerShell executable paths.
+
+## Build on Linux
+
+Install OpenCV and make its CMake package discoverable, then run:
 
 ```bash
-mkdir build && cd build
-cmake ..
-cmake --build . --config Release
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/matplotopencv_demo
 ```
 
-### Build documentation
-
-When `MATPLOTOPENCV_BUILD_DOCS=ON`, build the docs target with:
+The Windows-only local path file is not loaded on Linux. If OpenCV is installed
+in a nonstandard location, provide its package directory explicitly:
 
 ```bash
-cmake --build build --target doc
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DOpenCV_DIR=/path/to/opencv/cmake
 ```
 
-### Run the demo
+If Doxygen is not installed, disable the documentation target:
 
 ```bash
-Release\matplotopencv_demo.exe
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+  -DMATPLOTOPENCV_BUILD_DOCS=OFF
 ```
 
-### Build options
+## Build options
 
 - `MATPLOTOPENCV_BUILD_DEMO=ON|OFF`
 - `MATPLOTOPENCV_BUILD_DOCS=ON|OFF`
 
----
+Both options default to `ON` when building MatPlotOpenCV directly and `OFF`
+when it is included by another CMake project.
 
-## CMake Integration
+To generate API documentation:
 
-Clone the repository and consume it through its public target:
-
-```cmake
-add_subdirectory(MatPlotOpenCV)
-
-find_package(OpenCV REQUIRED COMPONENTS core imgproc highgui)
-
-add_executable(myapp main.cpp)
-target_link_libraries(myapp PRIVATE MatPlotOpenCV::mpocv)
+```powershell
+cmake --build build --config Release --target doc
 ```
 
-Public headers are exposed automatically through the library target.
-
----
-
-## Repository Layout
+## Repository layout
 
 ```text
 MatPlotOpenCV/
 |-- CMakeLists.txt
 |-- cmake/
-|-- include/
-|-- src/
 |-- demo/
 |-- docs/
 |-- images/
-`-- tests/
+|-- include/
+`-- src/
 ```
 
-`tests/` is currently reserved for future automated tests. The existing visual/manual validation program now lives in `demo/main_demo.cpp`.
+The demo is currently the manual validation program. Automated MatPlotOpenCV
+tests will be introduced during the stabilization work.
 
-The repository intentionally uses a single top-level `CMakeLists.txt`; `demo/` contains source files only. The `build/` directory is generated locally during configuration and build.
+## Limitations
 
----
-
-## Dependencies
-
-- C++17 compiler
-- OpenCV 4.x (`core`, `imgproc`, `highgui`)
-- Doxygen, only when `MATPLOTOPENCV_BUILD_DOCS=ON`
-
----
-
-## Notes & Limits
-
-- OpenCV's Hershey fonts are basic; for rich text or LaTeX you need a different backend.
-- Vector output (SVG/PDF) and subplots are not yet implemented.
-- Thread-safe as long as each thread owns its own `Figure`.
-
----
+- OpenCV Hershey fonts do not support rich text or LaTeX.
+- Vector output, subplots, interactive zoom, and interactive pan are not
+  implemented by this library.
+- Concurrent access to one `Figure` is not safe. HighGUI may also require calls
+  from the application's UI thread, depending on the OpenCV backend.
+- Coordinate vectors passed to `plot()`, `scatter()`, and `polygon()` must have
+  matching lengths.
 
 ## License
 
-This project is licensed under the [BSD 3-Clause License](./LICENSE).
-See the LICENSE file for full details.
+MatPlotOpenCV is licensed under the [BSD 3-Clause License](LICENSE).

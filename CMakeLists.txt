@@ -13,16 +13,25 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_paths.cmake")
+if(WIN32)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/local_paths.cmake")
+endif()
 
-option(MATPLOTOPENCV_BUILD_DEMO "Build the demo executable." ON)
-option(MATPLOTOPENCV_BUILD_DOCS "Build API documentation with Doxygen." ON)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(MATPLOTOPENCV_OPTION_DEFAULT ON)
+else()
+    set(MATPLOTOPENCV_OPTION_DEFAULT OFF)
+endif()
 
-if(MATPLOTOPENCV_OPENCV_DIR)
+option(MATPLOTOPENCV_BUILD_DEMO "Build the demo executable." ${MATPLOTOPENCV_OPTION_DEFAULT})
+option(MATPLOTOPENCV_BUILD_DOCS "Build API documentation with Doxygen." ${MATPLOTOPENCV_OPTION_DEFAULT})
+unset(MATPLOTOPENCV_OPTION_DEFAULT)
+
+if(MATPLOTOPENCV_OPENCV_DIR AND NOT OpenCV_DIR)
     set(OpenCV_DIR "${MATPLOTOPENCV_OPENCV_DIR}")
 endif()
 
-find_package(OpenCV 4.5 REQUIRED COMPONENTS core highgui imgproc)
+find_package(OpenCV 4.5 REQUIRED COMPONENTS core highgui imgproc imgcodecs)
 
 add_library(mpocv STATIC
     src/figure.cpp
@@ -39,6 +48,7 @@ target_link_libraries(mpocv
         opencv_core
         opencv_highgui
         opencv_imgproc
+        opencv_imgcodecs
 )
 
 if(MATPLOTOPENCV_BUILD_DEMO)
@@ -56,14 +66,14 @@ if(MATPLOTOPENCV_BUILD_DOCS)
     find_package(Doxygen REQUIRED)
 
     configure_file(
-        "${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+        "${PROJECT_SOURCE_DIR}/docs/Doxyfile.in"
+        "${PROJECT_BINARY_DIR}/Doxyfile"
         @ONLY
     )
 
     add_custom_target(doc
-        COMMAND "${DOXYGEN_EXECUTABLE}" "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+        COMMAND "${DOXYGEN_EXECUTABLE}" "${PROJECT_BINARY_DIR}/Doxyfile"
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         COMMENT "Generating API documentation with Doxygen"
         VERBATIM
     )
