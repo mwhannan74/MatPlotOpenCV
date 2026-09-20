@@ -1,13 +1,28 @@
 #include "figure.h"
 
+#include <opencv2/core/utils/logger.hpp>
+
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 
 int main()
 {
-    mpocv::Figure figure;
     int failures = 0;
+
+    const auto original_log_level = cv::utils::logging::getLogLevel();
+    cv::utils::logging::setLogLevel(cv::utils::logging::LOG_LEVEL_DEBUG);
+    mpocv::Figure logging_test_figure;
+    const auto log_level_after_construction = cv::utils::logging::getLogLevel();
+    cv::utils::logging::setLogLevel(original_log_level);
+
+    if (log_level_after_construction != cv::utils::logging::LOG_LEVEL_DEBUG)
+    {
+        std::cerr << "FAIL: Figure construction changed the OpenCV log level\n";
+        ++failures;
+    }
+
+    mpocv::Figure figure;
 
     const auto expect_invalid_argument = [&failures](const char* name, auto&& call)
     {
