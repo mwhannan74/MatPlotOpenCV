@@ -44,27 +44,48 @@ int main()
 
     // Construct a figure by specifying its image dimensions in pixels. Plot
     // calls retain the supplied data and styling until the figure is rendered.
+    // Call form: Figure(width_pixels, height_pixels)
     Figure fig1(800, 600);
+
+    // Call form: plot(x_values, y_values, color, line_thickness_pixels, legend_label)
     fig1.plot(xs, ys1, Color::Blue(), 2.0f, "sin(t)");
     fig1.plot(xs, ys2, Color::Cyan(), 2.0f, "0.5*sin(t+0.5)");
 
     // Scatter points and text annotations use the same data-coordinate system
     // as the plotted lines.
+    // Call form: scatter(x_values, y_values, color, marker_radius_pixels, legend_label)
     fig1.scatter({ M_PI / 2 }, { 1.0 }, Color::Red(), 6.0f);
+
+    // Call form: text(x, y, message, color, font_scale, text_thickness, horizontal_alignment, vertical_alignment, legend_label)
+    // Arguments after color are optional, so this call uses their defaults.
     fig1.text(M_PI / 2, 1.05, "peak", Color::Black());
 
     // Configure the axes and labels before rendering. axis_tight() removes the
     // default autoscale padding, while legend() displays labeled commands.
+    // Call form: grid(enabled)
     fig1.grid(true);
+
+    // Call form: axis_tight()
     fig1.axis_tight();
+
+    // Call form: legend(enabled, location)
     fig1.legend(true, "northEast");
+
+    // Call form: title(text)
     fig1.title("Two sine waves");
+
+    // Call form: xlabel(text)
     fig1.xlabel("x-axis");
+
+    // Call form: ylabel(text)
     fig1.ylabel("y-axis");
 
     // show() renders the retained commands and displays the resulting image.
     // save() writes that image to disk; it does not require a display window.
+    // Call form: show(window_name)
     fig1.show("Demo Figure 1");
+
+    // Call form: save(filename)
     fig1.save("demo1_sine_circle.png");
 
     // -------------------------------------------------------------------------
@@ -85,6 +106,7 @@ int main()
 
     // Equal scaling makes one x-unit occupy the same number of pixels as one
     // y-unit. This is important when displaying physical paths and geometry.
+    // Call form: equal_scale(enabled)
     fig2.equal_scale(true);
     fig2.grid(true);
     fig2.title("2D Object Path");
@@ -106,6 +128,8 @@ int main()
     circle_style.thickness = 2.0f;
     circle_style.fill_color = Color::Red();
     circle_style.fill_alpha = 0.5f;
+
+    // Call form: circle(center_x, center_y, radius, style, legend_label)
     fig3.circle(2, 1, 0.5, circle_style);
 
     ShapeStyle rect_xywh_style;
@@ -113,6 +137,8 @@ int main()
     rect_xywh_style.thickness = 2.0f;
     rect_xywh_style.fill_color = Color::Cyan();
     rect_xywh_style.fill_alpha = 0.6f;
+
+    // Call form: rect_xywh(lower_left_x, lower_left_y, width, height, style, legend_label)
     fig3.rect_xywh(2, 0.5, 1.0, 1.5, rect_xywh_style);
 
     ShapeStyle rect_ltrb_style;
@@ -120,6 +146,8 @@ int main()
     rect_ltrb_style.thickness = 2.0f;
     rect_ltrb_style.fill_color = Color::Yellow();
     rect_ltrb_style.fill_alpha = 0.4f;
+
+    // Call form: rect_ltrb(x0, y0, x1, y1, style, legend_label)
     fig3.rect_ltrb(4.0, 0.5, 5.0, 2.0, rect_ltrb_style);
 
     ShapeStyle rot_rect_style;
@@ -127,6 +155,8 @@ int main()
     rot_rect_style.thickness = 2.0f;
     rot_rect_style.fill_color = Color::Green();
     rot_rect_style.fill_alpha = 0.4f;
+
+    // Call form: rotated_rect(center_x, center_y, width, height, angle_degrees, style, legend_label)
     fig3.rotated_rect(6.5, 1.25, 1.2, 0.8, 30.0, rot_rect_style);
 
     ShapeStyle poly_style;
@@ -134,6 +164,8 @@ int main()
     poly_style.thickness = 1.5f;
     poly_style.fill_color = Color::Magenta();
     poly_style.fill_alpha = 0.5f;
+
+    // Call form: polygon(x_vertices, y_vertices, style, legend_label)
     fig3.polygon({ 1.5, 2.0, 2.5, 2.0 }, { 3.0, 3.5, 3.0, 2.5 }, poly_style);
 
     ShapeStyle ellipse_style;
@@ -141,6 +173,8 @@ int main()
     ellipse_style.thickness = 2.0f;
     ellipse_style.fill_color = Color::Red();
     ellipse_style.fill_alpha = 0.3f;
+
+    // Call form: ellipse(center_x, center_y, width, height, angle_degrees, style, legend_label)
     fig3.ellipse(4.5, 2.0, 2.0, 1.0, 45.0, ellipse_style);
 
     // Equal scaling preserves the intended geometry of circles and rotated
